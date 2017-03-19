@@ -9,6 +9,7 @@
 #include <maya/MFnPlugin.h>
 #include "ThreeSweepCmd.h"
 #include <iostream>
+
 MStatus initializePlugin( MObject obj )
 //
 //	Description:

@@ -16,14 +16,14 @@ bool Solution::compute_circle()
 	if (curt) return update_circle();
 	// this is to compute the init circle
 	// check the size of stroke before computing
-	if (input.size() < 3) return false;
+	if (input.size() < 4) return false;
 	// input.size >= 3
 	// get the first 3 points in the Stroke
 	// the first and second determine the origin and radius
 	// the all 3 determine the plane normal
 	vec3 first = input.getPoint(0);
 	vec3 second = input.getPoint(1);
-	vec3 third = input.getPoint(2);
+	vec3 third = input.getPoint(3);
 	// for the 3rd sweep's start point
 	// previous_point = third;
 	/**** compute the orignal point ****/
@@ -39,6 +39,7 @@ bool Solution::compute_circle()
 	vec3 proj_short = third - origin;
 	// 2. calculate the length of the other right-angle side
 	float right_angle_side_length = sqrt(radius * radius - dot(proj_short, proj_short));
+	if (right_angle_side_length != right_angle_side_length) right_angle_side_length = 0.0f;
 	// 3. compute the offset vector in the reverse_camera_direction
 	vec3 offset = right_angle_side_length * camera_direction;
 	// 4. compute the real-world-axis vector of the short side

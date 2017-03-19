@@ -9,6 +9,7 @@ class Solution
 public:
 	Solution() 
 	{
+		curt = nullptr;
 	}
 	Solution(const Stroke & stroke)
 	{
@@ -16,6 +17,7 @@ public:
 	}
 	Solution(const vec3 & cd, const Stroke & stroke) 
 	{
+		curt = nullptr;
 		camera_direction = vec3(cd);
 		input = Stroke(stroke);
 	}

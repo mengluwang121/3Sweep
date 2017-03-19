@@ -21,6 +21,7 @@ public:
 	static MSyntax newSyntax();
 	static void* creator() { return new ThreeSweepCmd(); }
 	MStatus doIt(const MArgList& args);
+	static Manager* manager;
 };
 
 #endif

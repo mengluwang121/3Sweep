@@ -1,0 +1,15 @@
+﻿  pluginMain.cpp
+  ThreeSweepCmd.cpp
+ThreeSweepCmd.cpp(32): warning C4101: 'status': unreferenced local variable
+  Test.cpp
+  Stroke.cpp
+backend\Stroke.cpp(31): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  Solution.cpp
+  Manager.cpp
+  Geometry.cpp
+  Circle.cpp
+  Generating Code...
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(1189,5): warning MSB8012: TargetPath(d:\onedrive\documents\visual studio 2015\Projects\3Sweep\3Sweep\3Sweep.mll) does not match the Linker's OutputFile property value (d:\onedrive\documents\visual studio 2015\Projects\3Sweep\3Sweep\Debug\3Sweep.mll). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
+  LINK : Debug\3Sweep.mll not found or not built by the last incremental link; performing full link
+     Creating library Debug\3Sweep.lib and object Debug\3Sweep.exp
+  3Sweep.vcxproj -> d:\onedrive\documents\visual studio 2015\Projects\3Sweep\3Sweep\3Sweep.mll

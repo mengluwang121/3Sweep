@@ -4,6 +4,7 @@
 
 Manager::Manager()
 {
+	curt_solution = nullptr;
 }
 
 
@@ -18,7 +19,7 @@ Manager::~Manager()
 
 void Manager::update(const vec3 & point, const vec3 & camera_direction, bool is_line)
 {
-	if (curt_solution == NULL)
+	if (!curt_solution)
 	{
 		Stroke stroke = Stroke();
 		curt_solution = new Solution(camera_direction, stroke);
