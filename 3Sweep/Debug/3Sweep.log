@@ -1,0 +1,13 @@
+﻿  pluginMain.cpp
+  ThreeSweepCmd.cpp
+ThreeSweepCmd.cpp(32): warning C4101: 'status': unreferenced local variable
+  Test.cpp
+  Stroke.cpp
+backend\Stroke.cpp(31): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  Solution.cpp
+  Manager.cpp
+  Geometry.cpp
+  Circle.cpp
+  Generating Code...
+     Creating library Debug\3Sweep.lib and object Debug\3Sweep.exp
+  3Sweep.vcxproj -> d:\onedrive\documents\visual studio 2015\Projects\3Sweep\3Sweep\Debug\3Sweep.mll
