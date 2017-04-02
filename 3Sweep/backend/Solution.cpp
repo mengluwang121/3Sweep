@@ -38,8 +38,9 @@ bool Solution::compute_circle()
 	// 1. get the short projection of radius
 	vec3 proj_short = third - origin;
 	// 2. calculate the length of the other right-angle side
-	float right_angle_side_length = sqrt(radius * radius - dot(proj_short, proj_short));
-	if (right_angle_side_length != right_angle_side_length) right_angle_side_length = 0.0f;
+	float right_angle_side_length = radius * radius - dot(proj_short, proj_short);
+	if (right_angle_side_length < 0) right_angle_side_length = 0.0f;
+	else right_angle_side_length = sqrt(right_angle_side_length);
 	// 3. compute the offset vector in the reverse_camera_direction
 	vec3 offset = right_angle_side_length * camera_direction;
 	// 4. compute the real-world-axis vector of the short side

@@ -25,6 +25,8 @@
     <ClCompile Include="pluginMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="3SweepFunc.mel" />
+    <None Include="3SweepStrokeDetection.mel" />
     <None Include="3SweepUI.mel" />
   </ItemGroup>
   <ItemGroup>

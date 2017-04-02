@@ -1,0 +1,164 @@
+// stroke detection and parsing 
+// Procedure called on press
+global proc sampleContextPress()
+{
+	global int $samplePointCount;
+	global int $totalPointCount;
+
+	global vector $stroke[];
+
+    float $pressPosition[] = `draggerContext -query -anchorPoint sampleContext`;
+	if($totalPointCount%10 == 0){
+	$stroke[$samplePointCount++] = <<$pressPosition[0], $pressPosition[1], $pressPosition[2]>>;
+	}
+	$totalPointCount++;
+    //print ("Press: " + $pressPosition[0] + " " + $pressPosition[1] + " "
+    //   + $pressPosition[2] + "\n");
+}
+
+// Procedure called on drag
+global proc sampleContextDrag()
+{	
+	global int $samplePointCount;
+	global vector $stroke[];
+	global int $strokeCount;
+
+    float  $dragPosition[] = `draggerContext -query -dragPoint sampleContext`;
+	$stroke[$samplePointCount] = <<$dragPosition[0], $dragPosition[1], $dragPosition[2]>>;
+	
+
+	$samplePointCount++;
+
+    //int    $button     = `draggerContext -query -button sampleContext`;
+    //string $modifier   = `draggerContext -query -modifier sampleContext`;
+
+    //print ("Drag: " + $dragPosition[0] + " " + $dragPosition[1] + " "
+    //    + $dragPosition[2]
+    //    + "  Button is " + $button + "  Modifier is " + $modifier + "\n");
+
+}
+
+global proc sampleContextDragRelease()
+{
+// Used to print out the global variable 
+
+	global float $imageSize[];
+	global int $samplePointCount;
+	global vector $stroke[];
+	global int $strokeCount;
+	global string $strokes[];
+	global string $myCircles[];
+	global string $myTempCircles[];		
+
+	int $mode = $strokeCount%3;
+
+	if ($strokeCount%3 != 2){
+
+	$start = $stroke[0];
+	$startX = $start.x;
+	$startY = $start.y;
+	$startZ = $start.z;
+	$end = $stroke[--$samplePointCount];
+	$endX = $end.x;
+	$endY = $end.y;
+	$endZ = $end.z;
+
+	$strokes[$strokeCount] = `curve -d 1 -p $startX $startY $startZ -p $endX $endY $endZ`;
+
+	ThreeSweepCmd -m $mode -p $startX $startY $startZ -p $endX $endY $endZ;
+
+	}else{
+
+	string $cmd = "ThreeSweepCmd -m " + $mode;
+	 
+	$start = $stroke[0];
+	$startX = $start.x;
+	$startY = $start.y;
+	$startZ = $start.z;
+	$strokes[$strokeCount] = `curve -d 3 -p $startX $startY $startZ`;
+	$cmd += " -p " +$startX + " "+ $startY + " " + $startZ;
+
+	for($i = 1; $i<$samplePointCount; $i++){
+		
+		$curPoint = $stroke[$i];
+		print $curPoint;
+		$curX = $curPoint.x;
+		$curY = $curPoint.y;
+		$curZ = $curPoint.z;
+
+		curve -a -p $curX $curY $curZ $strokes[$strokeCount];
+		$cmd += " -p " +$curX + " "+ $curY + " " + $curZ;
+	}
+
+	print $cmd;
+	eval($cmd);
+
+	}
+
+	print ("Done!");
+
+	//reset
+	$stroke = {};
+	$samplePointCount = 0;
+
+	//strokes count added
+	$strokeCount++;
+}
+
+global proc float[] calculateLocalPosition(float $position[]){
+	global float $imageSize[];
+    return $position;
+}
+
+// Create the dragger context
+draggerContext
+    -pressCommand "sampleContextPress"
+    -dragCommand  "sampleContextDrag"
+	-releaseCommand "sampleContextDragRelease"
+    -cursor       "hand"
+    -space "world"
+    sampleContext;
+
+// Set current tool to use the sample context created.
+// Results can be seen by dragging mouse in main window
+
+
+
+
+
+c++
+
+
+int index = (numStrokes-1) / 3;
+
+		MString stroke = "$strokes[";
+		stroke += numStrokes-1;
+		stroke +="]";
+
+		vec3 start = result->getOrigin();
+		vec3 end = points[points.size()-1];
+
+		MString circle = "$myTempCircles[";
+		circle += index;
+		circle += "]";
+
+		vec3 normal = result->getNormal();
+		float radius = result->getRadius();
+		MString cmd ="string $temp[] =`circle -c 0 0 0 -nr ";
+		cmd += normal.x;
+		cmd += " ";
+		cmd += -normal.y;
+		cmd += " ";
+		cmd += normal.z;
+		cmd += " -r ";
+		cmd += radius;
+		cmd += "`";
+		MGlobal::displayInfo(cmd);
+		MGlobal::executeCommand(cmd, true);
+
+		cmd = circle + "=$temp[0];";
+
+		cmd += "extrude -ch true -rn false -po 1 -et 2 -ucp 1 -fpt 1 -upn 1 -rotation 0 -scale 1 -rsp 1 "+circle+" "+stroke+";";
+
+		MGlobal::displayInfo(cmd);
+		MGlobal::executeCommand(cmd, true);

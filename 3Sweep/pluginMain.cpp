@@ -25,6 +25,7 @@ MStatus initializePlugin( MObject obj )
 	MFnPlugin plugin( obj, "3Sweep", "2015", "Any");
 
 	MGlobal::executeCommand("source \"" + plugin.loadPath() + "/3SweepUI.mel\"", true);
+	MGlobal::executeCommand("source \"" + plugin.loadPath() + "/3SweepFunc.mel\"", true);
 
 	status = plugin.registerUI("initialize3SweepUI","delete3SweepUI");
 	if (!status) {

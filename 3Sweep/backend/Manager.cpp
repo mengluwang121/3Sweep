@@ -5,6 +5,7 @@
 Manager::Manager()
 {
 	curt_solution = nullptr;
+	number_of_strokes = 0;
 }
 
 
@@ -15,6 +16,11 @@ Manager::~Manager()
 	{
 		delete pointer;
 	}*/
+}
+
+void Manager::count()
+{
+	number_of_strokes++;
 }
 
 void Manager::update(const vec3 & point, const vec3 & camera_direction, bool is_line)
@@ -47,7 +53,7 @@ void Manager::update_curve(const vec3 & point, const vec3 & camera_direction)
 void Manager::end()
 {
 	//solutions.push_back(curt_solution);
-	curt_solution = NULL;
+	curt_solution = nullptr;
 }
 
 //int main() {

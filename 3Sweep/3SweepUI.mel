@@ -2,9 +2,16 @@ global string $path;
 global float $imageSize[];
 
 global int $samplePointCount;
+global int $totalPointCount;
+
 global vector $stroke[];
 global int $strokeCount;
 global string $strokes[];
+
+global string $curves[];
+global string $myCircles[];
+global string $myTempCircles[];		
+
 
 global proc addMenu() {
     global string $gMainWindow;
@@ -74,116 +81,4 @@ global proc delete3SweepUI() {
 
 addMenu();
 
-
-// stroke detection and parsing 
-// Procedure called on press
-global proc sampleContextPress()
-{
-	global int $samplePointCount;
-	global vector $stroke[];
-
-    float $pressPosition[] = `draggerContext -query -anchorPoint sampleContext`;
-	$stroke[$samplePointCount++] = <<$pressPosition[0], $pressPosition[1], $pressPosition[2]>>;
-
-    //print ("Press: " + $pressPosition[0] + " " + $pressPosition[1] + " "
-    //   + $pressPosition[2] + "\n");
-}
-
-// Procedure called on drag
-global proc sampleContextDrag()
-{	
-	global int $samplePointCount;
-	global vector $stroke[];
-	global int $strokeCount;
-
-    float  $dragPosition[] = `draggerContext -query -dragPoint sampleContext`;
-	$stroke[$samplePointCount] = <<$dragPosition[0], $dragPosition[1], $dragPosition[2]>>;
-	
-
-	$samplePointCount++;
-
-    //int    $button     = `draggerContext -query -button sampleContext`;
-    //string $modifier   = `draggerContext -query -modifier sampleContext`;
-
-    //print ("Drag: " + $dragPosition[0] + " " + $dragPosition[1] + " "
-    //    + $dragPosition[2]
-    //    + "  Button is " + $button + "  Modifier is " + $modifier + "\n");
-
-}
-
-global proc sampleContextDragRelease()
-{
-// Used to print out the global variable 
-
-	global float $imageSize[];
-	global int $samplePointCount;
-	global vector $stroke[];
-	global int $strokeCount;
-	global string $strokes[];
-
-	int $mode = $strokeCount%3;
-
-	if ($strokeCount%3 != 2){
-
-	$start = $stroke[0];
-	$startX = $start.x;
-	$startY = $start.y;
-	$startZ = $start.z;
-	$end = $stroke[--$samplePointCount];
-	$endX = $end.x;
-	$endY = $end.y;
-	$endZ = $end.z;
-
-	$strokes[$strokeCount] = `curve -d 1 -p $startX $startY $startZ -p $endX $endY $endZ`;
-
-	ThreeSweepCmd -m $mode -p $startX $startY $startZ -p $endX $endY $endZ;
-
-	}else{
-
-	$start = $stroke[0];
-	$startX = $start.x;
-	$startY = $start.y;
-	$startZ = $start.z;
-	$strokes[$strokeCount] = `curve -d 3 -p $startX $startY $startZ`;
-
-	for($i = 1; $i<$samplePointCount; $i++){
-		
-		$curPoint = $stroke[$i];
-		print $curPoint;
-		$curX = $curPoint.x;
-		$curY = $curPoint.y;
-		$curZ = $curPoint.z;
-		curve -a -p $curX $curY $curZ $strokes[$strokeCount];
-	}
-	}
-
-	print $stroke;
-	//to do call c++
-
-	print ("Done!");
-
-	//reset
-	$stroke = {};
-	$samplePointCount = 0;
-
-	//strokes count added
-	$strokeCount++;
-}
-
-global proc float[] calculateLocalPosition(float $position[]){
-	global float $imageSize[];
-    return $position;
-}
-
-// Create the dragger context
-draggerContext
-    -pressCommand "sampleContextPress"
-    -dragCommand  "sampleContextDrag"
-	-releaseCommand "sampleContextDragRelease"
-    -cursor       "hand"
-    -space "world"
-    sampleContext;
-
-// Set current tool to use the sample context created.
-// Results can be seen by dragging mouse in main window
-setToolTo sampleContext;
+EPCurveTool;

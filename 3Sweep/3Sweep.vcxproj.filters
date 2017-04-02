@@ -52,6 +52,12 @@
     <None Include="3SweepUI.mel">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="3SweepFunc.mel">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="3SweepStrokeDetection.mel">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ThreeSweepCmd.h">

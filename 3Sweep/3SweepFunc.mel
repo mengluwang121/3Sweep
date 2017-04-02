@@ -1,0 +1,74 @@
+global proc processing(){
+
+	ctxCompletion;
+	EPCurveTool;
+
+	global string $curves[];
+
+	$curves = `ls "curveShape*"`;
+	int $len = size($curves);
+	print "number of curves: ";
+    print $len;
+
+	int $mode = $len%3;
+
+	if($len!=0 && $mode == 0){
+
+        string $attrName = "curve"+ $len+ ".cv[*]";
+        float $points[] = `getAttr $attrName`;
+        int $numCurvePoints = size($points)/3;
+	
+		string $cmd = "ThreeSweepCmd -ncv " + $len;
+	 
+		$startX = $points[0];
+		$startY = $points[1];
+		$startZ = $points[2];
+
+		$cmd += " -p " +$startX + " "+ $startY + " " + $startZ;
+
+		for($i = 1; $i<$numCurvePoints; $i++){
+			
+			$offset = $i*3;
+		
+			$curX = $points[$offset];
+			$curY = $points[$offset+1];
+			$curZ = $points[$offset+2];
+
+			$cmd += " -p " +$curX + " "+ $curY + " " + $curZ;
+		}
+
+	print $cmd;
+	eval($cmd);
+	
+	}else if($mode!=0){
+
+	    string $attrName = "curve"+ $len+ ".cv[*]";
+	    float $points[] = `getAttr $attrName`;
+	    int $numCurvePoints = size($points)/3;
+
+	    $startX = $points[0];
+	    $startY = $points[1];
+	    $startZ = $points[2];
+	    $offset = $numCurvePoints*3;
+	    $endX = $points[$offset-3];
+	    $endY = $points[$offset-2];
+	    $endZ = $points[$offset-1];
+
+		ThreeSweepCmd -ncv $len -p $startX $startY $startZ -p $endX $endY $endZ;
+
+	}
+}
+
+if (`runTimeCommand -exists process`){
+	runTimeCommand -e -del process;
+}
+
+runTimeCommand
+	-annotation "process"
+	-commandLanguage "mel"
+	-command "processing()"
+	process;
+	
+nameCommand -ann "processNameCommand" -command ("process") processNameCommand;
+
+hotkey -k "Shift+Return" -name "processNameCommand";
