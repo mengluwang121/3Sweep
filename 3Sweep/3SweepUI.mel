@@ -9,8 +9,8 @@ global int $strokeCount;
 global string $strokes[];
 
 global string $curves[];
-global string $myCircles[];
-global string $myTempCircles[];		
+global string $initialCircles[];
+global string $circleSet[];		
 
 
 global proc addMenu() {

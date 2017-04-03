@@ -97,22 +97,23 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		MString thirdStroke = "curve";
 		thirdStroke += nCurves;
 
-		//build circle:
+		//build temp circle:?????????? need to be changed to build up circle set.
 		vec3 normal = result->getNormal();
 		float radius = result->getRadius();
 		MString cmd ="string $temp[] =`circle -c 0 0 0 -nr ";
-		cmd += normal.x;
+		/*cmd += normal.x;
 		cmd += " ";
 		cmd += -normal.y;
 		cmd += " ";
-		cmd += normal.z;
+		cmd += normal.z;*/
+		cmd += "0 0 -1";
 		cmd += " -r ";
 		cmd += radius;
 		cmd += "`";
 		MGlobal::displayInfo(cmd);
 		MGlobal::executeCommand(cmd, true);
 		//store the circle
-		MString circle = "$myTempCircles[";
+		MString circle = "$circleSet[";
 		circle += index;
 		circle += "]";
 		cmd = circle + "=$temp[0];";
@@ -154,7 +155,7 @@ void ThreeSweepCmd::drawCircle(Circle* result, int numStrokes) {
 	MGlobal::displayInfo(cmd); 
 	MGlobal::executeCommand(cmd, true);
 
-	cmd = "$myCircles[";
+	cmd = "$initialCircles[";
 	cmd += (numStrokes - 1) / 3;
 	cmd += "] = $circleFullName[0]";
 	MGlobal::displayInfo(cmd);
