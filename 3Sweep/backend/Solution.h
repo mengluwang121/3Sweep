@@ -33,11 +33,13 @@ public:
 	void set_camera_direction(const vec3 & cd);
 	void test(const vec3 & input);
 	void test(const vec3 & input, char* name);
+	void set_contours();
 	Geometry* curt;
 private:
 	vec3 camera_direction;
 	//vec3 previous_point;
 	Stroke input;
 	std::vector<Geometry*> history;	
+	std::vector<vec3> contours;
 };
 
