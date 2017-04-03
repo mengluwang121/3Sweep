@@ -63,8 +63,8 @@ bool Solution::compute_circle()
 
 bool Solution::update_circle()
 {
-	// right now for test
-	return true;
+	// TEST BASICS
+	//return true;
 
 	/**** TODO: update circle ****/
 	// things in the edge detection
