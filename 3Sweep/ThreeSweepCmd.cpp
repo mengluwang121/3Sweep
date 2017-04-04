@@ -89,7 +89,6 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		MGlobal::displayInfo("Circle is not computed");
 		return MStatus::kSuccess;
 	}
-
 	if (nCurves % 3 == 2) {
 		MGlobal::displayInfo("Circle is computed");
 		//drawCircle(circle_plane, nCurves);
@@ -127,8 +126,9 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			MString cylinderName = "Cylinder";
 			cylinderName += index;
 			int startIdx = subdivisionsX;
-			int endIdx = subdivisionsX * 2;
-			vec3 translate = end - start;
+			int endIdx = subdivisionsX * 2-1;
+			vec3 translateW = end - start;//word 
+			vec3 translate = vec3(translateW.x, translateW.z, -translateW.y);
 			vec3 direction = vec3(0, 0, 0);
 			vec3 scale = vec3(scaleRatio, scaleRatio, scaleRatio);
 			extrude(cylinderName, startIdx, endIdx, translate, direction, scale);
@@ -238,7 +238,7 @@ void ThreeSweepCmd::drawInitialCylinder(float radius, vec3 origin, vec3 ax, int 
 void ThreeSweepCmd::extrude(MString objName, int startIdx, int endIdx, vec3 translate, vec3 direction, vec3 scale) {
 	
 	MString cmd = "PolyExtrude; polyExtrudeFacet -constructionHistory 1 -keepFacesTogether 1 -pvx ";
-	"0 -pvy 1 -pvz 0 -divisions 1 -twist 0 -taper 1 -off 0 -thickness 0 -smoothingAngle 30 -lt ";
+	cmd += "0 -pvy 1 -pvz 0 -divisions 1 -twist 0 -taper 1 -off 0 -thickness 0 -smoothingAngle 30 -lt ";
 	cmd += translate.x;
 	cmd += " ";
 	cmd += translate.y;
@@ -253,8 +253,12 @@ void ThreeSweepCmd::extrude(MString objName, int startIdx, int endIdx, vec3 tran
 	cmd += " ";
 	cmd += objName;
 	cmd += ".f[";
-	cmd += startIdx + ":" + endIdx; 
-	
+	cmd += startIdx;
+	cmd += ":";
+	cmd += endIdx;
+	cmd += "]";
+	MGlobal::displayInfo(cmd);
+	MGlobal::executeCommand(cmd, true);
 }
 
 std::vector<vec3> getSamplePoints(int nCurves) {

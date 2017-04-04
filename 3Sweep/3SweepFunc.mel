@@ -20,7 +20,7 @@ global proc processing(){
         //int $numCurvePoints = size($points)/3;
 	
 		string $cmd = "ThreeSweepCmd -ncv " + $len;
-		int $nSample = 101;
+		int $nSample = 21;
 		float $step = 1.0 / ($nSample-1);
 		float $pctParam = 0;
 
