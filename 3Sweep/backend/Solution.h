@@ -13,7 +13,7 @@ public:
 	}
 	Solution(const Stroke & stroke)
 	{
-		Solution(vec3(0.0, 0.0, -1.0), stroke);
+		Solution(vec3(0.0f, 0.0f, -1.0f), stroke);
 	}
 	Solution(const vec3 & cd, const Stroke & stroke) 
 	{
@@ -23,7 +23,6 @@ public:
 	}
 	~Solution()
 	{
-		if (curt) delete curt;
 		for (auto pointer : history) delete pointer;
 	}
 	bool compute();
@@ -36,10 +35,10 @@ public:
 	void set_contours();
 	Geometry* curt;
 	std::vector<Geometry*> history;
+	Stroke input;
 private:
 	vec3 camera_direction;
-	//vec3 previous_point;
-	Stroke input;
+	//vec3 previous_point;	
 	std::vector<vec3> contours;
 };
 

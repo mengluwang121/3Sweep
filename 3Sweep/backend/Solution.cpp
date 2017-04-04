@@ -13,7 +13,7 @@ bool Solution::compute()
 bool Solution::compute_circle()
 {	
 	// if curt exists, should update the circle from the init one. 
-	if (curt) return update_circle();
+	// if (curt) return update_circle();
 	// this is to compute the init circle
 	// check the size of stroke before computing
 	if (input.size() < 4) return false;
@@ -33,7 +33,7 @@ bool Solution::compute_circle()
 	vec3 r1 = second - origin;
 	/**** compute the radius of the circle ****/
 	// half of the distance between 1st and 2nd
-	float radius = 0.5f * sqrt(dot(second - first, second - first));
+	float radius = 0.5f * length(second - first);
 	/**** compute the normal vector ****/
 	// 1. get the short projection of radius
 	vec3 proj_short = third - origin;
@@ -49,6 +49,8 @@ bool Solution::compute_circle()
 	// NEED DISCUSSION: cailbration
 	// 6. compute the normal vector by rot
 	vec3 normal = cross(r1, r2);
+	// TODO::perspective view needed
+	//vec3 normal = normalize(proj_short);
 	// set output instance
 	curt = new Circle(origin, radius, normal);
 	// push the previous circle to the history list
@@ -71,9 +73,8 @@ bool Solution::update_circle()
 	// things in the edge detection
 	// if size < 4: means the init is not over
 	if (input.size() < 4) return false;
-	for (int i = 4; i < input.size(); i++) {
-		// get the circle pointer of previous one
-		Circle* pre_circle = (Circle*)curt;
+	Circle* pre_circle = (Circle*)curt;
+	for (int i = 4; i < input.size(); i++) {		
 		// get curt point
 		vec3 curt_point = input.getPoint(i);
 		vec3 pre_point = input.getPoint(i - 1);
@@ -103,9 +104,12 @@ bool Solution::update_circle()
 
 		// construct a new circle 
 		// TODO:: current normal is just for 2d
-		curt = new Circle(origin, radius, normal_2d);
+		// REMEMBER THE '-' HERE!!!!
+		Circle* new_circle = new Circle(origin, radius, -normal_2d);
+		// get the circle pointer of previous one
+		pre_circle = new_circle;
 		// push the previous circle to the history list
-		history.push_back(curt);
+		history.push_back(new_circle);
 	}	
 	return true;
 }

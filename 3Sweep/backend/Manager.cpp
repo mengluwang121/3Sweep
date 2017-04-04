@@ -39,13 +39,12 @@ void Manager::update_line(const vec3 & point, const vec3 & camera_direction)
 	// TODO 
 	curt_solution->set_camera_direction(camera_direction);
 	curt_solution->add_point(point);
-	curt_solution->compute();
 }
 
 void Manager::update_curve(const vec3 & point, const vec3 & camera_direction)
 {
 	// TODO
-	//curt_solution->set_camera_direction(camera_direction);
+	curt_solution->set_camera_direction(camera_direction);
 	curt_solution->add_point(point);
 }
 

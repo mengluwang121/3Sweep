@@ -41,6 +41,7 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 
 	int mode = 0;
 	int nCurves = 0;
+	int subdivisionsX = 20;
 
 	MArgDatabase argData(newSyntax(), args);
 
@@ -76,49 +77,64 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 
 	//more control
 	vec3 camera = vec3(0.0, 0.0, -1.0);
-	// first two strokes
-	for (int i = 0; i < 4; i++) {
+	// update from the last point
+	for (int i = 0; i < numPoints; i++) {
 		manager->update(points[i], camera, true);
-	}
-	// update curve
-	for (int i = 4; i < numPoints; i++) {
-		manager->update(points[i], camera, false);
 	}
 	manager->curt_solution->compute();
 
-	Circle* result = (Circle*)(manager->curt_solution->curt);
+	Circle* circle_plane = (Circle*)(manager->curt_solution->curt);
 
-	if (!result) {
+	if (!circle_plane) {
 		MGlobal::displayInfo("Circle is not computed");
 		return MStatus::kSuccess;
 	}
 
 	if (nCurves % 3 == 2) {
 		MGlobal::displayInfo("Circle is computed");
-		drawCircle(result, nCurves);
+		//drawCircle(circle_plane, nCurves);
+		vec3 origin = circle_plane->getOrigin();
+		float radius = circle_plane->getRadius();
+		vec3 normal = circle_plane->getNormal();
+
+		int index = (nCurves+1) / 3;//index start from 1
+		drawInitialCylinder(radius, origin, normal, subdivisionsX, index);
+
 	}else if (nCurves % 3 == 0) {
 
 		MGlobal::displayInfo("Extruding");
 
-		int index = (nCurves -1) / 3; //circle index
+		int index = nCurves/ 3; //circle index
 		MString thirdStroke = "curve";
 		thirdStroke += nCurves;//the third curve name
 
 		//build temp circle
 		Circle* pre_circle = (Circle*)(manager->curt_solution->history[0]);
+		Circle* curt_circle = pre_circle;
+
 		for (int i = 1; i < manager->curt_solution->history.size(); i++) {
 			// Done:: change to list of circle
-			Circle* curt_circle = (Circle*)(manager->curt_solution->history[i]);
+			curt_circle = (Circle*)(manager->curt_solution->history[i]);
 			vec3 lastNormal = pre_circle->getNormal();
+
 			float lastRadius = pre_circle->getRadius();
 			float curRadius = curt_circle->getRadius();
-			float scale = curRadius/ lastRadius;
-			vec3 start = pre_circle->getOrigin();
+			float scaleRatio = curRadius/ lastRadius;
+			vec3 start = pre_circle->getOrigin(); 
 			vec3 end = curt_circle->getOrigin();
 			// update pre_circle
 			pre_circle = curt_circle;
+			MString cylinderName = "Cylinder";
+			cylinderName += index;
+			int startIdx = subdivisionsX;
+			int endIdx = subdivisionsX * 2;
+			vec3 translate = end - start;
+			vec3 direction = vec3(0, 0, 0);
+			vec3 scale = vec3(scaleRatio, scaleRatio, scaleRatio);
+			extrude(cylinderName, startIdx, endIdx, translate, direction, scale);
+	
 			//build start circle and curveSegment
-			MString cmd ="circle -c 0 0 0 -nr ";
+	/*		MString cmd ="circle -c 0 0 0 -nr ";
 			cmd += lastNormal.x;
 			cmd += " ";
 			cmd += -lastNormal.y;
@@ -142,19 +158,19 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			cmd += end.z;
 			cmd += " -n curveSeg;";
 			MGlobal::displayInfo(cmd);
-			MGlobal::executeCommand(cmd, true);
+			MGlobal::executeCommand(cmd, true);*/
 
 			//extrude
-			cmd = "extrude -ch true -rn false -po 1 -et 2 -ucp 1 -fpt 1 -upn 1 -rotation 0 -scale ";
-			cmd += scale;
-			cmd += " -rsp 1 startCircle curveSeg";
-			MGlobal::displayInfo(cmd);
-			MGlobal::executeCommand(cmd, true);
+			//cmd = "extrude -ch true -rn false -po 1 -et 2 -ucp 1 -fpt 1 -upn 1 -rotation 0 -scale ";
+			//cmd += scale;
+			//cmd += " -rsp 1 startCircle curveSeg";
+			//MGlobal::displayInfo(cmd);
+			//MGlobal::executeCommand(cmd, true);
 
-			//reset
-			cmd = "delete startCircle; delete curveSeg;";
-			MGlobal::displayInfo(cmd);
-			MGlobal::executeCommand(cmd, true);
+			////reset
+			//cmd = "delete startCircle; delete curveSeg;";
+			//MGlobal::displayInfo(cmd);
+			//MGlobal::executeCommand(cmd, true);
 		}
 	}
 
@@ -194,6 +210,52 @@ void ThreeSweepCmd::drawCircle(Circle* result, int numStrokes) {
 	MGlobal::executeCommand(cmd, true);
 }
 
+void ThreeSweepCmd::drawInitialCylinder(float radius, vec3 origin, vec3 ax, int sx, int index) {
+	MString cmd = "";
+	cmd = "polyCylinder -h 0.001 -r ";
+	cmd += radius;
+	cmd += " -sx ";
+	cmd += sx;
+	cmd += " -sy 1 -sz 1 -rcp 0 -cuv 3 -ch 1 -ax ";
+	cmd += ax.x;
+	cmd += " ";
+	cmd += ax.y;
+	cmd += " "; 
+	cmd += ax.z;
+	cmd += " -n Cylinder";
+	cmd += index;
+	cmd += "; move -r ";
+	cmd += origin.x;
+	cmd += " ";
+	cmd += origin.y;
+	cmd += " ";
+	cmd += origin.z;
+
+	MGlobal::displayInfo(cmd);
+	MGlobal::executeCommand(cmd, true);
+}
+
+void ThreeSweepCmd::extrude(MString objName, int startIdx, int endIdx, vec3 translate, vec3 direction, vec3 scale) {
+	
+	MString cmd = "PolyExtrude; polyExtrudeFacet -constructionHistory 1 -keepFacesTogether 1 -pvx ";
+	"0 -pvy 1 -pvz 0 -divisions 1 -twist 0 -taper 1 -off 0 -thickness 0 -smoothingAngle 30 -lt ";
+	cmd += translate.x;
+	cmd += " ";
+	cmd += translate.y;
+	cmd += " ";
+	cmd += translate.z; 
+	cmd += " -ls ";
+	cmd += scale.x;
+	cmd += " ";
+	cmd += scale.y;
+	cmd += " ";
+	cmd += scale.z;
+	cmd += " ";
+	cmd += objName;
+	cmd += ".f[";
+	cmd += startIdx + ":" + endIdx; 
+	
+}
 
 std::vector<vec3> getSamplePoints(int nCurves) {
 	//get sample points
