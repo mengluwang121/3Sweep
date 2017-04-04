@@ -13,28 +13,35 @@ global proc processing(){
 	int $mode = $len%3;
 
 	if($len!=0 && $mode == 0){
-
-        string $attrName = "curve"+ $len+ ".cv[*]";
-        float $points[] = `getAttr $attrName`;
-        int $numCurvePoints = size($points)/3;
+		
+		//control points
+        //string $attrName = "curve"+ $len+ ".cv[*]";
+        //float $points[] = `getAttr $attrName`;
+        //int $numCurvePoints = size($points)/3;
 	
 		string $cmd = "ThreeSweepCmd -ncv " + $len;
-	 
-		$startX = $points[0];
-		$startY = $points[1];
-		$startZ = $points[2];
+		int $nSample = 101;
+		float $step = 1.0 / ($nSample-1);
+		float $pctParam = 0;
 
-		$cmd += " -p " +$startX + " "+ $startY + " " + $startZ;
-
-		for($i = 1; $i<$numCurvePoints; $i++){
+		for($i = 0; $i<$nSample; $i++){
 			
-			$offset = $i*3;
-		
-			$curX = $points[$offset];
-			$curY = $points[$offset+1];
-			$curZ = $points[$offset+2];
+			//get control points
+			//$offset = $i*3;
+			//$curX = $points[$offset];
+			//$curY = $points[$offset+1];
+			//$curZ = $points[$offset+2];
+
+			float $curPoint[];
+			$getPointCmd = "pointOnCurve -top true -pr " + $pctParam + " curve" + $len;
+			$curPoint = eval($getPointCmd);
+			$curX = $curPoint[0];
+			$curY = $curPoint[1];
+			$curZ = $curPoint[2];
 
 			$cmd += " -p " +$curX + " "+ $curY + " " + $curZ;
+
+			$pctParam += $step;
 		}
 
 	print $cmd;
