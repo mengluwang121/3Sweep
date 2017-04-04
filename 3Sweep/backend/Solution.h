@@ -35,11 +35,11 @@ public:
 	void test(const vec3 & input, char* name);
 	void set_contours();
 	Geometry* curt;
+	std::vector<Geometry*> history;
 private:
 	vec3 camera_direction;
 	//vec3 previous_point;
 	Stroke input;
-	std::vector<Geometry*> history;	
 	std::vector<vec3> contours;
 };
 

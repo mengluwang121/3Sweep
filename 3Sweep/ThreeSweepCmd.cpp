@@ -76,9 +76,15 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 
 	//more control
 	vec3 camera = vec3(0.0, 0.0, -1.0);
-	for (int i = 0; i < numPoints; i++) {
+	// first two strokes
+	for (int i = 0; i < 4; i++) {
 		manager->update(points[i], camera, true);
 	}
+	// update curve
+	for (int i = 4; i < numPoints; i++) {
+		manager->update(points[i], camera, false);
+	}
+	manager->curt_solution->compute();
 
 	Circle* result = (Circle*)(manager->curt_solution->curt);
 
@@ -99,16 +105,18 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		thirdStroke += nCurves;//the third curve name
 
 		//build temp circle
-		vec3 lastNormal = result->getNormal();
-		float lastRadius = result->getRadius();
-
-		for (int i = 1; i < numPoints; i++) {
-			
-			float curRadius = lastRadius*0.98;//to do
+		Circle* pre_circle = (Circle*)(manager->curt_solution->history[0]);
+		for (int i = 1; i < manager->curt_solution->history.size(); i++) {
+			// Done:: change to list of circle
+			Circle* curt_circle = (Circle*)(manager->curt_solution->history[i]);
+			vec3 lastNormal = pre_circle->getNormal();
+			float lastRadius = pre_circle->getRadius();
+			float curRadius = curt_circle->getRadius();
 			float scale = curRadius/ lastRadius;
-			vec3 start = points[i - 1];
-			vec3 end = points[i];
-	
+			vec3 start = pre_circle->getOrigin();
+			vec3 end = curt_circle->getOrigin();
+			// update pre_circle
+			pre_circle = curt_circle;
 			//build start circle and curveSegment
 			MString cmd ="circle -c 0 0 0 -nr ";
 			cmd += lastNormal.x;
@@ -147,11 +155,6 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			cmd = "delete startCircle; delete curveSeg;";
 			MGlobal::displayInfo(cmd);
 			MGlobal::executeCommand(cmd, true);
-
-			//update for next iteration
-			vec3 curNormal = vec3(0, 1, 0);//to do
-			lastNormal = curNormal;
-			lastRadius = curRadius;
 		}
 	}
 

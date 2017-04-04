@@ -51,7 +51,8 @@ bool Solution::compute_circle()
 	vec3 normal = cross(r1, r2);
 	// set output instance
 	curt = new Circle(origin, radius, normal);
-
+	// push the previous circle to the history list
+	history.push_back(curt);
 	//TEST
 	//test(proj_short);
 	//cout << "radius: " << radius << endl;
@@ -65,44 +66,47 @@ bool Solution::update_circle()
 {
 	// TEST BASICS
 	//return true;
-	const float TH_DOT_ERR = 0.5f;
+	const float TH_DOT_ERR = 0.1f;
 	/**** TODO: update circle ****/
 	// things in the edge detection
 	// if size < 4: means the init is not over
 	if (input.size() < 4) return false;
-	// push the previous circle to the history list
-	history.push_back(curt);
-	// get the circle pointer of previous one
-	Circle* pre_circle = (Circle*)curt;
-	// get curt point
-	vec3 curt_point = input.getPoint(input.size() - 1);
-	vec3 pre_point = input.getPoint(input.size() - 2);
-	// compute the new origin, normal; calculate the new radius
-	// TODO:: compute origin with two edges
-	vec3 origin = curt_point;
-	// TODO:: curt - pre is not correct
-	vec3 normal_2d = normalize(curt_point - pre_point);
-	vec3 perpend = normalize(cross(normal_2d, camera_direction));
-	// at this time contour vector should have been inited
-	// compute the radius by shooting ray at each contour point
-	float max = 0.0f, min = 0.0f;
-	for (vec3 cp : contours) {
-		vec3 ray = normalize(cp - origin);
-		if (abs(dot(ray, normal_2d)) < TH_DOT_ERR) {
-			float projection = dot(cp, perpend);
-			max = fmaxf(max, projection);
-			min = fminf(min, projection);
+	for (int i = 4; i < input.size(); i++) {
+		// get the circle pointer of previous one
+		Circle* pre_circle = (Circle*)curt;
+		// get curt point
+		vec3 curt_point = input.getPoint(i);
+		vec3 pre_point = input.getPoint(i - 1);
+		vec3 next_point = i == input.size() ? curt_point : input.getPoint(i + 1);
+		// compute the new origin, normal; calculate the new radius
+		// TODO:: compute origin with two edges
+		vec3 origin = curt_point;
+		// TODO:: curt - pre is not correct
+		vec3 normal_2d = normalize(next_point - pre_point);
+		vec3 perpend = normalize(cross(normal_2d, camera_direction));
+		// at this time contour vector should have been inited
+		// compute the radius by shooting ray at each contour point
+		float max = 0.0f, min = 0.0f;
+		for (vec3 cp : contours) {
+			vec3 ray = normalize(cp - origin);
+			if (abs(dot(ray, normal_2d)) < TH_DOT_ERR) {
+				float projection = dot(cp, perpend);
+				max = fmaxf(max, projection);
+				min = fminf(min, projection);
+			}
 		}
-	}
-	float radius = pre_circle->getRadius();
-	if (max != 0.0f && min != 0.0f) radius = 0.5f * (max - min);
-	else if (max != 0.0f) radius = max;
-	else if (min != 0.0f) radius = -min;
-	// else remain the radius
-	
-	// construct a new circle 
-	// TODO:: current normal is just for 2d
-	curt = new Circle(origin, radius, normal_2d);
+		float radius = pre_circle->getRadius();
+		if (max != 0.0f && min != 0.0f) radius = 0.5f * (max - min);
+		else if (max != 0.0f) radius = max;
+		else if (min != 0.0f) radius = -min;
+		// else remain the radius
+
+		// construct a new circle 
+		// TODO:: current normal is just for 2d
+		curt = new Circle(origin, radius, normal_2d);
+		// push the previous circle to the history list
+		history.push_back(curt);
+	}	
 	return true;
 }
 
