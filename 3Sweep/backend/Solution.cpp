@@ -68,7 +68,7 @@ bool Solution::update_circle()
 {
 	// TEST BASICS
 	//return true;
-	const float TH_DOT_ERR = 0.1f;
+	const float TH_DOT_ERR = 0.2f;
 	/**** TODO: update circle ****/
 	// things in the edge detection
 	// if size < 4: means the init is not over
@@ -88,10 +88,11 @@ bool Solution::update_circle()
 		// at this time contour vector should have been inited
 		// compute the radius by shooting ray at each contour point
 		float max = 0.0f, min = 0.0f;
-		for (vec3 cp : contours) {
-			vec3 ray = normalize(cp - origin);
-			if (abs(dot(ray, normal_2d)) < TH_DOT_ERR) {
-				float projection = dot(cp, perpend);
+		for (int j = 0; j < contours.size(); j++) {
+			vec3 ray = contours[j] - origin;
+			vec3 ray_norm = normalize(ray);
+			if (abs(dot(ray_norm, normal_2d)) < TH_DOT_ERR) {
+				float projection = dot(ray, perpend);
 				max = fmaxf(max, projection);
 				min = fminf(min, projection);
 			}
@@ -132,4 +133,16 @@ void Solution::test(const vec3 & input)
 void Solution::test(const vec3 & input, char * name)
 {
 	std::cout << name << ": " << input.x << ", " << input.y << ", " << input.z << std::endl;
+}
+
+void Solution::set_contours(std::string filename)
+{
+	std::ifstream infile(filename);
+	int rows, cols;
+	infile >> rows >> cols;
+	int x, y;
+	while (infile >> x >> y) {
+		contours.push_back(vec3(0.01 * (y - cols/2.0) , 0.01 *(rows/2.0 - x), 0.0));
+	}
+	infile.close();
 }

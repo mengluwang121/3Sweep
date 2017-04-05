@@ -2,7 +2,10 @@
 #include "Circle.h"
 #include "Stroke.h"
 //#include "Test.h"
-
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
 using namespace glm;
 class Solution
 {
@@ -32,13 +35,12 @@ public:
 	void set_camera_direction(const vec3 & cd);
 	void test(const vec3 & input);
 	void test(const vec3 & input, char* name);
-	void set_contours();
+	void set_contours(std::string filename);
 	Geometry* curt;
 	std::vector<Geometry*> history;
 	Stroke input;
+	std::vector<vec3> contours;
 private:
 	vec3 camera_direction;
-	//vec3 previous_point;	
-	std::vector<vec3> contours;
 };
 

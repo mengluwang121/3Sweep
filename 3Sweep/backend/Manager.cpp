@@ -23,28 +23,29 @@ void Manager::count()
 	number_of_strokes++;
 }
 
-void Manager::update(const vec3 & point, const vec3 & camera_direction, bool is_line)
+void Manager::init(const vec3 & camera_direction, std::string filename)
 {
-	if (!curt_solution)
-	{
-		Stroke stroke = Stroke();
-		curt_solution = new Solution(camera_direction, stroke);
-	}
-	if (is_line) update_line(point, camera_direction);
-	else update_curve(point, camera_direction);
+	if (curt_solution) return;
+	Stroke stroke = Stroke();
+	curt_solution = new Solution(camera_direction, stroke);
+	curt_solution->set_contours(filename);
 }
 
-void Manager::update_line(const vec3 & point, const vec3 & camera_direction)
+void Manager::update(const vec3 & point, bool is_line)
+{
+	if (is_line) update_line(point);
+	else update_curve(point);
+}
+
+void Manager::update_line(const vec3 & point)
 {
 	// TODO 
-	curt_solution->set_camera_direction(camera_direction);
 	curt_solution->add_point(point);
 }
 
-void Manager::update_curve(const vec3 & point, const vec3 & camera_direction)
+void Manager::update_curve(const vec3 & point)
 {
 	// TODO
-	curt_solution->set_camera_direction(camera_direction);
 	curt_solution->add_point(point);
 }
 

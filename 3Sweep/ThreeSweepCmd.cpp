@@ -78,8 +78,15 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 	//more control
 	vec3 camera = vec3(0.0, 0.0, -1.0);
 	// update from the last point
+	// hardcode file name
+	if (manager->curt_solution == nullptr) manager->init(camera, "C:\\Users\\SIG\\Source\\Repos\\3Sweep2\\3Sweep\\Banana.txt");
+
+	MString test = "TEST: ";
+	test += (int)(manager->curt_solution->contours.size());
+	MGlobal::displayInfo(test);
+
 	for (int i = 0; i < numPoints; i++) {
-		manager->update(points[i], camera, true);
+		manager->update(points[i], true);
 	}
 	manager->curt_solution->compute();
 
@@ -118,7 +125,14 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 
 			float lastRadius = pre_circle->getRadius();
 			float curRadius = curt_circle->getRadius();
-			float scaleRatio = curRadius/ lastRadius;
+			float scaleRatio = (curRadius/ lastRadius) * (curRadius / lastRadius);
+			// TEST START
+			MString radiusString = "Radius: ";
+			radiusString += curRadius;
+			radiusString += "; LastRadius: ";
+			radiusString += lastRadius;
+			MGlobal::displayInfo(radiusString);
+			// TEST END
 			vec3 start = pre_circle->getOrigin(); 
 			vec3 end = curt_circle->getOrigin();
 			// update pre_circle
@@ -128,10 +142,10 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			int startIdx = subdivisionsX;
 			int endIdx = subdivisionsX * 2-1;
 			vec3 translateW = end - start;//word 
-			vec3 translate = vec3(translateW.x, translateW.z, -translateW.y);
+			//vec3 translate = -cross(vec3(1, 0, 0), translateW);
 			vec3 direction = vec3(0, 0, 0);
 			vec3 scale = vec3(scaleRatio, scaleRatio, scaleRatio);
-			extrude(cylinderName, startIdx, endIdx, translate, direction, scale);
+			extrude(cylinderName, startIdx, endIdx, translateW, direction, scale);
 	
 			//build start circle and curveSegment
 	/*		MString cmd ="circle -c 0 0 0 -nr ";
@@ -221,7 +235,7 @@ void ThreeSweepCmd::drawInitialCylinder(float radius, vec3 origin, vec3 ax, int 
 	cmd += " ";
 	cmd += ax.y;
 	cmd += " "; 
-	cmd += ax.z;
+	cmd += 0;
 	cmd += " -n Cylinder";
 	cmd += index;
 	cmd += "; move -r ";
@@ -238,7 +252,7 @@ void ThreeSweepCmd::drawInitialCylinder(float radius, vec3 origin, vec3 ax, int 
 void ThreeSweepCmd::extrude(MString objName, int startIdx, int endIdx, vec3 translate, vec3 direction, vec3 scale) {
 	
 	MString cmd = "PolyExtrude; polyExtrudeFacet -constructionHistory 1 -keepFacesTogether 1 -pvx ";
-	cmd += "0 -pvy 1 -pvz 0 -divisions 1 -twist 0 -taper 1 -off 0 -thickness 0 -smoothingAngle 30 -lt ";
+	cmd += "0 -pvy 1 -pvz 0 -divisions 1 -twist 0 -taper 1 -off 0 -thickness 0 -smoothingAngle 30 -t ";
 	cmd += translate.x;
 	cmd += " ";
 	cmd += translate.y;
