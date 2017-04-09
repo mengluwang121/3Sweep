@@ -6,6 +6,7 @@ Manager::Manager()
 {
 	curt_solution = nullptr;
 	number_of_strokes = 0;
+	path = "";
 }
 
 

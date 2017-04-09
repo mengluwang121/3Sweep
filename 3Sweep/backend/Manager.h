@@ -16,6 +16,7 @@ public:
 	void end();
 	Solution* curt_solution;
 	int number_of_strokes;
+	std::string path;
 private:
 	//std::vector<Solution*> solutions;
 };

@@ -42,20 +42,23 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 	MStatus* status;
 
 	MString path = "";
-	std::string s = path.asChar();
-	std::string delimiter = ".";
-	std::string pathWitoutExtension = s.substr(0, s.find(delimiter));
-
+	
 	int mode = 0;
 	int nCurves = 0;
 	int subdivisionsX = 20;
+
+	if (!manager) manager = new Manager();
 
 	MArgDatabase argData(newSyntax(), args);
 
 	if (argData.isFlagSet(pathFlag)) {
 		argData.getFlagArgument(pathFlag, 0, path);
-		MGlobal::displayInfo("Preprocessing");
+		manager->path = path.asChar();
+		
+		MGlobal::displayInfo("Preprocessing: " + path);
+
 		preProcess(path);
+
 		return MStatus::kSuccess;
 	}
 
@@ -84,7 +87,6 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		}
 	}
 
-	if (!manager) manager = new Manager();
 
 	if (manager->number_of_strokes % 3 == 0) manager->end();
 	manager->number_of_strokes = nCurves;
@@ -93,8 +95,14 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 	vec3 camera = vec3(0.0, 0.0, -1.0);
 	// update from the last point
 	// hardcode file name
-	
-	if (manager->curt_solution == nullptr) manager->init(camera, pathWitoutExtension+".txt");
+	std::string s = manager->path;
+	std::string delimiter = ".";
+	std::string pathWitoutExtension = s.substr(0, s.find(delimiter));
+	info = pathWitoutExtension.c_str();
+	info += ".txt";
+	MGlobal::displayInfo(info);
+
+	if (manager->curt_solution == nullptr) manager->init(camera, pathWitoutExtension + ".txt");
 
 	MString test = "TEST: ";
 	test += (int)(manager->curt_solution->contours.size());
@@ -162,44 +170,6 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			vec3 scale = vec3(scaleRatio, scaleRatio, scaleRatio);
 			extrude(cylinderName, startIdx, endIdx, translateW, direction, scale);
 	
-			//build start circle and curveSegment
-	/*		MString cmd ="circle -c 0 0 0 -nr ";
-			cmd += lastNormal.x;
-			cmd += " ";
-			cmd += -lastNormal.y;
-			cmd += " ";
-			cmd += 0;
-			cmd += " -r ";
-			cmd += lastRadius;
-			cmd += " -n startCircle;";
-
-			cmd += "curve - d 1 -p ";
-			cmd += start.x;
-			cmd += " ";
-			cmd += start.y;
-			cmd += " ";
-			cmd += start.z;
-			cmd += " -p ";
-			cmd += end.x;
-			cmd += " ";
-			cmd += end.y;
-			cmd += " ";
-			cmd += end.z;
-			cmd += " -n curveSeg;";
-			MGlobal::displayInfo(cmd);
-			MGlobal::executeCommand(cmd, true);*/
-
-			//extrude
-			//cmd = "extrude -ch true -rn false -po 1 -et 2 -ucp 1 -fpt 1 -upn 1 -rotation 0 -scale ";
-			//cmd += scale;
-			//cmd += " -rsp 1 startCircle curveSeg";
-			//MGlobal::displayInfo(cmd);
-			//MGlobal::executeCommand(cmd, true);
-
-			////reset
-			//cmd = "delete startCircle; delete curveSeg;";
-			//MGlobal::displayInfo(cmd);
-			//MGlobal::executeCommand(cmd, true);
 		}
 	}
 
