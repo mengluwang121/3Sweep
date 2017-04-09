@@ -3,6 +3,7 @@
 #include <maya/MFnDependencyNode.h>
 #include <maya/MFnNurbsCurve.h>
 
+const char *pathFlag = "-pth", *pathLongFlag = "-path";
 const char *pointFlag = "-p", *pointLongFlag = "-point";
 const char *modeFlag = "-m", *modeLongFlag = "-mode";
 const char *nCurvesFlag = "-ncv", *nCurvesLongFlag = "-ncurves";
@@ -23,6 +24,7 @@ MSyntax ThreeSweepCmd::newSyntax()
 {
 	MSyntax syntax;
 
+	syntax.addFlag(pathFlag, pathLongFlag, MSyntax::kString);
 	syntax.addFlag(modeFlag, modeLongFlag, MSyntax::kDouble);
 	syntax.addFlag(nCurvesFlag, nCurvesLongFlag, MSyntax::kDouble);
 	syntax.addFlag(pointFlag, pointLongFlag, MSyntax::kDouble, MSyntax::kDouble, MSyntax::kDouble);
@@ -39,11 +41,23 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 	
 	MStatus* status;
 
+	MString path = "";
+	std::string s = path.asChar();
+	std::string delimiter = ".";
+	std::string pathWitoutExtension = s.substr(0, s.find(delimiter));
+
 	int mode = 0;
 	int nCurves = 0;
 	int subdivisionsX = 20;
 
 	MArgDatabase argData(newSyntax(), args);
+
+	if (argData.isFlagSet(pathFlag)) {
+		argData.getFlagArgument(pathFlag, 0, path);
+		MGlobal::displayInfo("Preprocessing");
+		preProcess(path);
+		return MStatus::kSuccess;
+	}
 
 	if (argData.isFlagSet(modeFlag))
 		argData.getFlagArgument(modeFlag, 0, mode);
@@ -79,7 +93,8 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 	vec3 camera = vec3(0.0, 0.0, -1.0);
 	// update from the last point
 	// hardcode file name
-	if (manager->curt_solution == nullptr) manager->init(camera, "C:\\Users\\SIG\\Source\\Repos\\3Sweep2\\3Sweep\\Banana.txt");
+	
+	if (manager->curt_solution == nullptr) manager->init(camera, pathWitoutExtension+".txt");
 
 	MString test = "TEST: ";
 	test += (int)(manager->curt_solution->contours.size());
@@ -315,4 +330,8 @@ std::vector<vec3> getSamplePoints(int nCurves) {
 	}
 
 	return pointsOnCurve;
+}
+
+void ThreeSweepCmd::preProcess(MString path) {
+
 }

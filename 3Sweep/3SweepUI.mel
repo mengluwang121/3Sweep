@@ -70,7 +70,9 @@ global proc invoke3SweepCmd(){
 	// edit image plane example
 	imagePlane -e -fn $path -mr false $myImagePlane[0];
 	$imageSize = `imagePlane -q -w -h $myImagePlane[1]` ;
-	
+
+	ThreeSweepCmd -pth $path;
+
 	setNamedPanelLayout "Four View";
 	
 }

@@ -4,3 +4,7 @@
 
 *.db
 *.opendb
+*.sdf
+*.ilk
+*.log
+*.obj

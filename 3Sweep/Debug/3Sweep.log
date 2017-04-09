@@ -1,11 +1,10 @@
-﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppClean.targets(76,5): warning : Access to the path 'c:\users\sig\source\repos\3sweep2\3sweep\3sweep.mll' is denied.
-  pluginMain.cpp
+﻿  pluginMain.cpp
   ThreeSweepCmd.cpp
-ThreeSweepCmd.cpp(103): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-ThreeSweepCmd.cpp(126): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-ThreeSweepCmd.cpp(127): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-ThreeSweepCmd.cpp(40): warning C4101: 'status': unreferenced local variable
-ThreeSweepCmd.cpp(282): warning C4305: 'initializing': truncation from 'double' to 'float'
+ThreeSweepCmd.cpp(118): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ThreeSweepCmd.cpp(141): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ThreeSweepCmd.cpp(142): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ThreeSweepCmd.cpp(42): warning C4101: 'status': unreferenced local variable
+ThreeSweepCmd.cpp(297): warning C4305: 'initializing': truncation from 'double' to 'float'
   Test.cpp
   Stroke.cpp
 backend\Stroke.cpp(31): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
@@ -16,5 +15,4 @@ backend\Solution.cpp(100): warning C4244: 'initializing': conversion from 'doubl
   Circle.cpp
   Generating Code...
      Creating library Debug\3Sweep.lib and object Debug\3Sweep.exp
-  3Sweep.vcxproj -> C:\Users\SIG\Source\Repos\3Sweep2\3Sweep\3Sweep.mll
-  3Sweep.vcxproj -> Debug\3Sweep.pdb (Full PDB)
+  3Sweep.vcxproj -> d:\onedrive\documents\visual studio 2015\Projects\3Sweep\3Sweep\3Sweep.mll
