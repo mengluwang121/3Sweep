@@ -1,10 +1,10 @@
 ﻿  pluginMain.cpp
   ThreeSweepCmd.cpp
-ThreeSweepCmd.cpp(126): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-ThreeSweepCmd.cpp(149): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-ThreeSweepCmd.cpp(150): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ThreeSweepCmd.cpp(129): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ThreeSweepCmd.cpp(152): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ThreeSweepCmd.cpp(153): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 ThreeSweepCmd.cpp(42): warning C4101: 'status': unreferenced local variable
-ThreeSweepCmd.cpp(267): warning C4305: 'initializing': truncation from 'double' to 'float'
+ThreeSweepCmd.cpp(278): warning C4305: 'initializing': truncation from 'double' to 'float'
   Test.cpp
   Stroke.cpp
 backend\Stroke.cpp(31): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
