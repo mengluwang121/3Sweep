@@ -15,4 +15,5 @@ backend\Solution.cpp(100): warning C4244: 'initializing': conversion from 'doubl
   Circle.cpp
   Generating Code...
      Creating library Debug\3Sweep.lib and object Debug\3Sweep.exp
-  3Sweep.vcxproj -> d:\onedrive\documents\visual studio 2015\Projects\3Sweep\3Sweep\3Sweep.mll
+  3Sweep.vcxproj -> F:\Tools\VSProjects\3Sweep\3Sweep\3Sweep.mll
+  3Sweep.vcxproj -> Debug\3Sweep.pdb (Full PDB)
