@@ -8,3 +8,6 @@
 *.ilk
 *.log
 *.obj
+*.sdf
+.vs/3Sweep/v14/.suo
+*.sdf

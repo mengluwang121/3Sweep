@@ -8,6 +8,7 @@
 #include <maya/MGlobal.h>
 #include <maya/MFnPlugin.h>
 #include "ThreeSweepCmd.h"
+#include "ThreeSweepNode.h"
 #include <iostream>
 
 MStatus initializePlugin( MObject obj )
@@ -39,6 +40,13 @@ MStatus initializePlugin( MObject obj )
 		return status;
 	}
 
+	status = plugin.registerNode("ThreeSweepNode", ThreeSweepNode::id,
+		ThreeSweepNode::creator, ThreeSweepNode::initialize);
+	if (!status) {
+		status.perror("registerNode");
+		return status;
+	}
+
 	return status;
 }
 
@@ -58,6 +66,12 @@ MStatus uninitializePlugin( MObject obj)
 	status = plugin.deregisterCommand("ThreeSweepCmd");
 	if (!status) {
 		status.perror("deregisterCommand");
+		return status;
+	}
+
+	status = plugin.deregisterNode(ThreeSweepNode::id);
+	if (!status) {
+		status.perror("deregisterNode");
 		return status;
 	}
 

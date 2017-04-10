@@ -13,58 +13,48 @@ global proc processing(){
 	int $mode = $len%3;
 
 	if($len!=0 && $mode == 0){
-		
-		//control points
-        //string $attrName = "curve"+ $len+ ".cv[*]";
-        //float $points[] = `getAttr $attrName`;
-        //int $numCurvePoints = size($points)/3;
 	
-		string $cmd = "ThreeSweepCmd -ncv " + $len;
-		int $nSample = 21;
-		float $step = 1.0 / ($nSample-1);
-		float $pctParam = 0;
-
-		for($i = 0; $i<$nSample; $i++){
-			
-			//get control points
-			//$offset = $i*3;
-			//$curX = $points[$offset];
-			//$curY = $points[$offset+1];
-			//$curZ = $points[$offset+2];
-
-			float $curPoint[];
-			$getPointCmd = "pointOnCurve -top true -pr " + $pctParam + " curve" + $len;
-			$curPoint = eval($getPointCmd);
-			$curX = $curPoint[0];
-			$curY = $curPoint[1];
-			$curZ = $curPoint[2];
-
-			$cmd += " -p " +$curX + " "+ $curY + " " + $curZ;
-
-			$pctParam += $step;
-		}
-
-	print $cmd;
-	eval($cmd);
+		string $cmd = "ThreeSweepCmd -ncv " + $len + " ";
+		int $nSample = `getAttr "ThreeSweepNode1.nSamplePoints"`;
+		string $pointsCmd = getSamplePoints("curve"+$len, $nSample);
+		$cmd += $pointsCmd;
+		print $cmd;
+		eval($cmd);
 	
 	}else if($mode!=0){
 
-	    string $attrName = "curve"+ $len+ ".cv[*]";
-	    float $points[] = `getAttr $attrName`;
-	    int $numCurvePoints = size($points)/3;
-
-	    $startX = $points[0];
-	    $startY = $points[1];
-	    $startZ = $points[2];
-	    $offset = $numCurvePoints*3;
-	    $endX = $points[$offset-3];
-	    $endY = $points[$offset-2];
-	    $endZ = $points[$offset-1];
-
-		ThreeSweepCmd -ncv $len -p $startX $startY $startZ -p $endX $endY $endZ;
+		string $cmd = "ThreeSweepCmd -ncv " + $len + " ";
+		int $nSample = 2;
+		string $pointsCmd = getSamplePoints("curve"+$len, $nSample);
+		$cmd += $pointsCmd;
+		print $cmd;
+		eval($cmd);
 
 	}
 }
+
+global proc string getSamplePoints(string $name, int $nSample){
+	string $pointsCmd = "";
+	float $step = 1.0 / ($nSample-1);
+	float $pctParam = 0;
+
+	for($i = 0; $i<$nSample; $i++){
+
+		float $curPoint[];
+		$getPointCmd = "pointOnCurve -top true -pr " + $pctParam + " " + $name;
+		$curPoint = eval($getPointCmd);
+		$curX = $curPoint[0];
+		$curY = $curPoint[1];
+		$curZ = $curPoint[2];
+
+		$pointsCmd += "-p " +$curX + " "+ $curY + " " + $curZ + " ";
+
+		$pctParam += $step;
+		}
+
+	return $pointsCmd;
+}
+
 
 if (`runTimeCommand -exists process`){
 	runTimeCommand -e -del process;
@@ -79,3 +69,4 @@ runTimeCommand
 nameCommand -ann "processNameCommand" -command ("process") processNameCommand;
 
 hotkey -k "Shift+Return" -name "processNameCommand";
+

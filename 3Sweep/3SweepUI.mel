@@ -72,6 +72,7 @@ global proc invoke3SweepCmd(){
 	$imageSize = `imagePlane -q -w -h $myImagePlane[1]` ;
 
 	ThreeSweepCmd -pth $path;
+	createNode ThreeSweepNode -n ThreeSweepNode1;
 
 	setNamedPanelLayout "Four View";
 	
