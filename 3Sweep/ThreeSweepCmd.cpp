@@ -314,5 +314,16 @@ std::vector<vec3> getSamplePoints(int nCurves) {
 }
 
 void ThreeSweepCmd::preProcess(MString path) {
+	std::string cmd = "EdgeDetection.exe ";
 
+	std::string s = path.asChar();
+	std::string delimiter = "/";
+	std::string relativePath = s.substr(s.find_last_of(delimiter), s.length());
+
+	cmd.append(relativePath);
+
+	MString info = cmd.c_str();
+	MGlobal::displayInfo(info);
+
+	int retCode = system(cmd.c_str());
 }

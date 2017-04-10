@@ -23,6 +23,7 @@
     <ClCompile Include="backend\Test.cpp" />
     <ClCompile Include="ThreeSweepCmd.cpp" />
     <ClCompile Include="pluginMain.cpp" />
+    <ClCompile Include="ThreeSweepNode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="3SweepFunc.mel" />
@@ -37,6 +38,7 @@
     <ClInclude Include="backend\Stroke.h" />
     <ClInclude Include="backend\Test.h" />
     <ClInclude Include="ThreeSweepCmd.h" />
+    <ClInclude Include="ThreeSweepNode.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <Keyword>Win32Proj</Keyword>

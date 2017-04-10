@@ -47,6 +47,9 @@
     <ClCompile Include="backend\Test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ThreeSweepNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="3SweepUI.mel">
@@ -80,6 +83,9 @@
     </ClInclude>
     <ClInclude Include="backend\Test.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreeSweepNode.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
