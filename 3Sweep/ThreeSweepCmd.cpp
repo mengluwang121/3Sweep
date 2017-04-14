@@ -2,6 +2,7 @@
 #include <maya/MSelectionList.h>
 #include <maya/MFnDependencyNode.h>
 #include <maya/MFnNurbsCurve.h>
+#include <cstdlib>
 
 const char *pathFlag = "-pth", *pathLongFlag = "-path";
 const char *pointFlag = "-p", *pointLongFlag = "-point";
@@ -34,32 +35,38 @@ MSyntax ThreeSweepCmd::newSyntax()
 	return syntax;
 }
 
-
 MStatus ThreeSweepCmd::doIt(const MArgList& args)
 {
 	MString info = "";
 	
 	MStatus* status;
 
-	MString path = "";
-	
-	int mode = 0;
-	int nCurves = 0;
-	int subdivisionsX = 20;
-
 	if (!manager) manager = new Manager();
 
 	MArgDatabase argData(newSyntax(), args);
 
+	int mode = 0;
+	int nCurves = 0;
+	int subdivisionsX = 20;
+	int index = 0;
+	MString curGeometry = "";
+
+	//preprocessing
 	if (argData.isFlagSet(pathFlag)) {
+
+		MString path = "";
 		argData.getFlagArgument(pathFlag, 0, path);
 		manager->path = path.asChar();
 		
 		MGlobal::displayInfo("Preprocessing: " + path);
-
-		preProcess(path);
-
-		return MStatus::kSuccess;
+		int retCode = preProcess(path);
+		if (retCode == 0) {
+			return MStatus::kSuccess;
+		}
+		else {
+			MGlobal::displayInfo("initialize failure!");
+			return MStatus::kFailure;
+		}
 	}
 
 	if (argData.isFlagSet(modeFlag))
@@ -68,10 +75,14 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 	if (argData.isFlagSet(nCurvesFlag))
 		argData.getFlagArgument(nCurvesFlag, 0, nCurves);
 
+	index = ((nCurves - 1) / 3) + 1; //start from 1;
+	curGeometry = "Geometry";
+	curGeometry += index;
+
+	//get points in this curve
 	int numPoints = 0;
 	MArgList pointList;
 	std::vector<vec3> points;
-
 	if (argData.isFlagSet(pointFlag)) {
 		numPoints = argData.numberOfFlagUses(pointFlag);
 		for (int i = 0; i < numPoints; i++) {
@@ -87,15 +98,10 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		}
 	}
 
-
 	if (manager->number_of_strokes % 3 == 0) manager->end();
 	manager->number_of_strokes = nCurves;
 
-	//more control
-	vec3 camera = vec3(0.0, 0.0, -1.0);
-	// update from the last point
-	// hardcode file name 
-
+	//initialize manager with current image dege information;
 	if (manager->curt_solution == nullptr) {
 		std::string s = manager->path;
 		std::string delimiter = ".";
@@ -104,6 +110,8 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		info = pathWitoutExtension.c_str();
 		info += ".txt";
 		MGlobal::displayInfo(info);
+
+		vec3 camera = vec3(0.0, 0.0, -1.0);
 		manager->init(camera, pathWitoutExtension + ".txt");
 	}
 
@@ -114,29 +122,38 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 	for (int i = 0; i < numPoints; i++) {
 		manager->update(points[i], true);
 	}
+
 	manager->curt_solution->compute();
 
+	//TODO Geometry
 	Circle* circle_plane = (Circle*)(manager->curt_solution->curt);
 
 	if (!circle_plane) {
-		MGlobal::displayInfo("Circle is not computed");
+		MGlobal::displayInfo("Geometry is not computed");
 		return MStatus::kSuccess;
 	}
+
 	if (nCurves % 3 == 2) {
-		MGlobal::displayInfo("Circle is computed");
-		//drawCircle(circle_plane, nCurves);
-		vec3 origin = circle_plane->getOrigin();
-		float radius = circle_plane->getRadius();
-		vec3 normal = circle_plane->getNormal();
+		MGlobal::displayInfo("Geometry is computed");
+		
+		int type = 0;//TODO 0: cylinder, 1: cube
+		if (type == 0) {
+			vec3 origin = circle_plane->getOrigin();
+			float radius = circle_plane->getRadius();
+			vec3 normal = circle_plane->getNormal();
 
-		int index = (nCurves+1) / 3;//index start from 1
-		drawInitialCylinder(radius, origin, normal, subdivisionsX, index);
-
+			drawInitialCylinder(radius, origin, normal, subdivisionsX, curGeometry);
+		}
+		else if (type == 1) {
+			//TODO
+			drawInitialCube(1, 1, 1, vec3(1,1,1), vec3(1, 1, 1), curGeometry);
+		}
+		
 	}else if (nCurves % 3 == 0) {
 
 		MGlobal::displayInfo("Extruding");
 
-		int index = nCurves/ 3; //circle index
+		//int index = nCurves/ 3; //circle index
 		MString thirdStroke = "curve";
 		thirdStroke += nCurves;//the third curve name
 
@@ -163,8 +180,6 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			vec3 end = curt_circle->getOrigin();
 			// update pre_circle
 			pre_circle = curt_circle;
-			MString cylinderName = "Cylinder";
-			cylinderName += index;
 			int startIdx = subdivisionsX;
 			int endIdx = subdivisionsX * 2-1;
 
@@ -172,7 +187,7 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			float angle = glm::degrees(glm::acos(glm::dot(glm::normalize(lastNormal),glm::normalize(curNormal))));
 			vec3 rotationL = vec3(0, angle,0);
 			vec3 scaleL = vec3(scaleRatio, scaleRatio, scaleRatio);
-			extrude(cylinderName, startIdx, endIdx, translateW, rotationL, scaleL);
+			extrude(curGeometry, startIdx, endIdx, translateW, rotationL, scaleL);
 	
 		}
 	}
@@ -180,40 +195,7 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 	return MStatus::kSuccess;
 }
 
-void ThreeSweepCmd::drawCircle(Circle* result, int numStrokes) {
-	MString origin = "";
-	origin += result->getOrigin().x;
-	origin += " ";
-	origin += result->getOrigin().y;
-	origin += " ";
-	origin += result->getOrigin().z;
-
-	MString radius = "";
-	radius += result->getRadius();
-
-	MString normal = "";
-	normal += result->getNormal().x;
-	normal += " ";
-	normal += result->getNormal().y;
-	normal += " ";
-	normal += result->getNormal().z;
-
-	MGlobal::displayInfo(origin);
-	MGlobal::displayInfo(radius);
-	MGlobal::displayInfo(normal);
-
-	MString cmd = "global string $circleFullName[]; $circleFullName = `circle -nr " + normal + " -c " + origin + " -r " + radius + "`";
-	MGlobal::displayInfo(cmd); 
-	MGlobal::executeCommand(cmd, true);
-
-	cmd = "$initialCircles[";
-	cmd += (numStrokes - 1) / 3;
-	cmd += "] = $circleFullName[0]";
-	MGlobal::displayInfo(cmd);
-	MGlobal::executeCommand(cmd, true);
-}
-
-void ThreeSweepCmd::drawInitialCylinder(float radius, vec3 origin, vec3 ax, int sx, int index) {
+void ThreeSweepCmd::drawInitialCylinder(float radius, vec3 origin, vec3 ax, int sx, MString name) {
 	MString cmd = "";
 	cmd = "polyCylinder -h 0.001 -r ";
 	cmd += radius;
@@ -225,8 +207,34 @@ void ThreeSweepCmd::drawInitialCylinder(float radius, vec3 origin, vec3 ax, int 
 	cmd += ax.y;
 	cmd += " "; 
 	cmd += 0;
-	cmd += " -n Cylinder";
-	cmd += index;
+	cmd += " -n ";
+	cmd += name;
+	cmd += "; move -r ";
+	cmd += origin.x;
+	cmd += " ";
+	cmd += origin.y;
+	cmd += " ";
+	cmd += origin.z;
+
+	MGlobal::displayInfo(cmd);
+	MGlobal::executeCommand(cmd, true);
+}
+
+void ThreeSweepCmd::drawInitialCube(float w, float h, float d, vec3 origin, vec3 ax, MString name) {
+	MString cmd = "";
+	cmd = "polyCube -w ";
+	cmd += w;
+	cmd += " -h 0.0001 ";
+	cmd += " -d ";
+	cmd += d;
+	cmd += " -rcp 0 -cuv 3 -ch 1 -ax ";
+	cmd += ax.x;
+	cmd += " ";
+	cmd += ax.y;
+	cmd += " ";
+	cmd += 0;
+	cmd += " -n ";
+	cmd += name;
 	cmd += "; move -r ";
 	cmd += origin.x;
 	cmd += " ";
@@ -313,17 +321,17 @@ std::vector<vec3> getSamplePoints(int nCurves) {
 	return pointsOnCurve;
 }
 
-void ThreeSweepCmd::preProcess(MString path) {
-	std::string cmd = "EdgeDetection.exe ";
+int ThreeSweepCmd::preProcess(MString path) {
 
-	std::string s = path.asChar();
-	std::string delimiter = "/";
-	std::string relativePath = s.substr(s.find_last_of(delimiter), s.length());
+        std::string s = path.asChar();
+        std::string delimiter = "/";
+        std::string pathPre = s.substr(0, s.find_last_of(delimiter));
+        std::string cmd = pathPre.append("/EdgeDetection.exe ");
+        cmd.append(path.asChar());
 
-	cmd.append(relativePath);
+        MString info = cmd.c_str();
+        MGlobal::displayInfo(info);
 
-	MString info = cmd.c_str();
-	MGlobal::displayInfo(info);
-
-	int retCode = system(cmd.c_str());
+        int retCode = system(cmd.c_str());
+        return retCode;
 }

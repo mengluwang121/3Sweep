@@ -21,9 +21,10 @@ public:
 	static MSyntax newSyntax();
 	static void* creator() { return new ThreeSweepCmd(); }
 	MStatus doIt(const MArgList& args);
-	void preProcess(MString path);
+	int preProcess(MString path);
 	void drawCircle(Circle* result, int numStrokes);
-	void ThreeSweepCmd::drawInitialCylinder(float radius, vec3 origin, vec3 ax, int sx, int index);
+	void ThreeSweepCmd::drawInitialCylinder(float radius, vec3 origin, vec3 ax, int sx, MString name);
+	void ThreeSweepCmd::drawInitialCube(float w, float h, float d, vec3 origin, vec3 ax, MString name);
 	void extrude(MString objName, int startIdx, int endIdx, vec3 translate, vec3 rotation, vec3 scale);
 	static Manager* manager;
 };
