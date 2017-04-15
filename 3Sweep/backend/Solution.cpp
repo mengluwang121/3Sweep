@@ -180,7 +180,7 @@ bool Solution::update_circle()
 		// get curt point
 		vec3 curt_point = input.getPoint(i);
 		vec3 pre_point = input.getPoint(i - 1);
-		vec3 next_point = i == input.size() ? curt_point : input.getPoint(i + 1);
+		vec3 next_point = i == input.size() - 1 ? curt_point : input.getPoint(i + 1);
 		// compute the new origin, normal; calculate the new radius
 		// TODO:: compute origin with two edges
 		vec3 origin = curt_point;
