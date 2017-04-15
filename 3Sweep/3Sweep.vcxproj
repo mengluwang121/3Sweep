@@ -19,6 +19,7 @@
     <ClCompile Include="backend\Geometry.cpp" />
     <ClCompile Include="backend\Manager.cpp" />
     <ClCompile Include="backend\Solution.cpp" />
+    <ClCompile Include="backend\Square.cpp" />
     <ClCompile Include="backend\Stroke.cpp" />
     <ClCompile Include="backend\Test.cpp" />
     <ClCompile Include="ThreeSweepCmd.cpp" />
@@ -35,6 +36,7 @@
     <ClInclude Include="backend\Geometry.h" />
     <ClInclude Include="backend\Manager.h" />
     <ClInclude Include="backend\Solution.h" />
+    <ClInclude Include="backend\Square.h" />
     <ClInclude Include="backend\Stroke.h" />
     <ClInclude Include="backend\Test.h" />
     <ClInclude Include="ThreeSweepCmd.h" />
@@ -87,7 +89,7 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>F:\Tools\Autodesk\Maya2016\include;.;D:\Program Files\Autodesk\Maya2016\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\chlan\Maya2016Extension2_devkit_Windows\devkitBase\include;F:\Tools\Autodesk\Maya2016\include;.;D:\Program Files\Autodesk\Maya2016\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderOutputFile>$(Configuration)\3Sweep.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
@@ -96,7 +98,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <AdditionalOptions>/export:initializePlugin /export:uninitializePlugin %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>Foundation.lib;OpenMaya.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>F:\Tools\Autodesk\Maya2016\lib;D:\Program Files\Autodesk\Maya2016\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files\Autodesk\Maya 2016\lib;F:\Tools\Autodesk\Maya2016\lib;D:\Program Files\Autodesk\Maya2016\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <OutputFile>$(ProjectDir)3Sweep.mll</OutputFile>
       <ImportLibrary>$(Configuration)\3Sweep.lib</ImportLibrary>
       <ProgramDatabaseFile>$(Configuration)\3Sweep.pdb</ProgramDatabaseFile>

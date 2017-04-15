@@ -5,9 +5,97 @@ using namespace glm;
 bool Solution::compute()
 {
 	// TODO
-	// right now this is only for circle
-	if (!curt) return compute_circle();
-	return update_circle();
+	// for circle
+	if (shape == CIRCLE) {
+		if (!curt) return compute_circle();
+		return update_circle();
+	}
+	// for square
+	if (shape == SQUARE) {
+		if (!curt) return compute_square();
+		return update_square();
+	}	
+	return false;
+}
+
+bool Solution::compute_square()
+{
+	if (input.size() < 4) return false;
+
+	vec3 first = input.getPoint(0);
+	vec3 second = input.getPoint(1);
+	vec3 third = input.getPoint(2);
+	vec3 fourth = input.getPoint(3);
+	
+	// two strokes 
+	vec3 stroke1 = second - first;
+	vec3 stroke2 = fourth - third; // TODO: third or second
+	
+	// origin
+	vec3 origin = 0.5f * 0.5f * (first + second) + 0.5f * stroke2;
+
+	// length
+	float len = length(stroke1);
+
+	// TODO: normal
+	vec3 normal = vec3(0.0, -1.0, 0.0);
+
+	// Square
+	curt = new Square(origin, len, normal);
+	history.push_back(curt);
+	return true;
+}
+
+bool Solution::update_square()
+{
+	// TEST BASICS
+	//return true;
+	const float TH_DOT_ERR = 0.2f;
+	/**** TODO: update circle ****/
+	// things in the edge detection
+	// if size < 4: means the init is not over
+	if (input.size() < 4) return false;
+	Square* pre_square = (Square*)curt;
+	for (int i = 4; i < input.size(); i++) {
+		// get curt point
+		vec3 curt_point = input.getPoint(i);
+		vec3 pre_point = input.getPoint(i - 1);
+		vec3 next_point = i == input.size() ? curt_point : input.getPoint(i + 1);
+		// compute the new origin, normal; calculate the new length
+		// TODO:: compute origin with two edges
+		vec3 origin = curt_point;
+		// TODO:: curt - pre is not correct
+		vec3 normal_2d = normalize(next_point - pre_point);
+		vec3 perpend = normalize(cross(normal_2d, camera_direction));
+		// at this time contour vector should have been inited
+		// compute the radius by shooting ray at each contour point
+		float max = 0.0f, min = 0.0f;
+		for (int j = 0; j < contours.size(); j++) {
+			vec3 ray = contours[j] - origin;
+			vec3 ray_norm = normalize(ray);
+			if (abs(dot(ray_norm, normal_2d)) < TH_DOT_ERR) {
+				float projection = dot(ray, perpend);
+				max = fmaxf(max, projection);
+				min = fminf(min, projection);
+			}
+		}
+		// TODO: whether to use the max to defin the length of the square
+		float len = pre_square->getLength();
+		if (max != 0.0f && min != 0.0f) len = max - min;
+		else if (max != 0.0f) len = 2.0 * max;
+		else if (min != 0.0f) len = -2.0 * min;
+		// else remain the len
+
+		// construct a new square 
+		// TODO:: current normal is just for 2d
+		// REMEMBER THE '-' HERE!!!!
+		Square* new_square = new Square(origin, len, -normal_2d);
+		// get the circle pointer of previous one
+		pre_square = new_square;
+		// push the previous circle to the history list
+		history.push_back(new_square);
+	}
+	return true;
 }
 
 bool Solution::compute_circle()

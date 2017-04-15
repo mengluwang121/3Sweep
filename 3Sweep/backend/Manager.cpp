@@ -13,10 +13,10 @@ Manager::Manager()
 Manager::~Manager()
 {
 	if (curt_solution) delete curt_solution;
-	/*for (auto pointer : solutions)
+	for (auto pointer : solutions)
 	{
 		delete pointer;
-	}*/
+	}
 }
 
 void Manager::count()
@@ -24,11 +24,11 @@ void Manager::count()
 	number_of_strokes++;
 }
 
-void Manager::init(const vec3 & camera_direction, std::string filename)
+void Manager::init(const vec3 & camera_direction, std::string filename, Solution::Shape shape)
 {
 	if (curt_solution) return;
 	Stroke stroke = Stroke();
-	curt_solution = new Solution(camera_direction, stroke);
+	curt_solution = new Solution(camera_direction, stroke, shape);
 	curt_solution->set_contours(filename);
 }
 
@@ -52,7 +52,7 @@ void Manager::update_curve(const vec3 & point)
 
 void Manager::end()
 {
-	//solutions.push_back(curt_solution);
+	solutions.push_back(curt_solution);
 	curt_solution = nullptr;
 }
 
