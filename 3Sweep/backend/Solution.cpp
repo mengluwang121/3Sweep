@@ -65,6 +65,7 @@ bool Solution::update_square()
 	// TEST BASICS
 	//return true;
 	const float TH_DOT_ERR = 0.2f;
+	const float TH_MAX_NUMBER_OF = 5.0f;
 	/**** TODO: update circle ****/
 	// things in the edge detection
 	// if size < 4: means the init is not over
@@ -96,10 +97,10 @@ bool Solution::update_square()
 		// TODO: whether to use the max to defin the length of the square
 		float len = pre_square->getLength();
 		if (max != 0.0f && min != 0.0f) len = max - min;
-		else if (max != 0.0f && i != input.size() - 1) len = 2.0 * max;
-		else if (min != 0.0f && i != input.size() - 1) len = -2.0 * min;
+		else if (max != 0.0f) len = 2.0 * max;
+		else if (min != 0.0f) len = -2.0 * min;
 		// else remain the len
-
+		if (len > TH_MAX_NUMBER_OF) len = pre_square->getLength();
 		// construct a new square 
 		// TODO:: current normal is just for 2d
 		// REMEMBER THE '-' HERE!!!!
@@ -176,6 +177,7 @@ bool Solution::update_circle()
 	// TEST BASICS
 	//return true;
 	const float TH_DOT_ERR = 0.2f;
+	const float TH_MAX_NUMBER_OF = 5.0f;
 	/**** TODO: update circle ****/
 	// things in the edge detection
 	// if size < 4: means the init is not over
@@ -206,10 +208,10 @@ bool Solution::update_circle()
 		}
 		float radius = pre_circle->getRadius();
 		if (max != 0.0f && min != 0.0f) radius = 0.5f * (max - min);
-		else if (max != 0.0f && i != input.size() - 1) radius = max;
-		else if (min != 0.0f && i != input.size() - 1) radius = -min;
+		else if (max != 0.0f && i) radius = max;
+		else if (min != 0.0f && i) radius = -min;
 		// else remain the radius
-
+		if(radius > TH_MAX_NUMBER_OF) radius = pre_circle->getRadius();
 		// construct a new circle 
 		// TODO:: current normal is just for 2d
 		// REMEMBER THE '-' HERE!!!!
