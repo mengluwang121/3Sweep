@@ -25,7 +25,7 @@ public:
 		curt = nullptr;
 		camera_direction = vec3(cd);
 		input = Stroke(stroke);
-		shape = CIRCLE;
+		shape = NOTHING;
 	}
 	~Solution()
 	{

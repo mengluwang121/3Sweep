@@ -24,7 +24,7 @@ public:
 	int preProcess(MString path);
 	void drawCircle(Circle* result, int numStrokes);
 	void ThreeSweepCmd::drawInitialCylinder(float radius, vec3 origin, vec3 ax, int sx, MString name);
-	void ThreeSweepCmd::drawInitialCube(float w, float h, float d, vec3 origin, vec3 ax, MString name);
+	void ThreeSweepCmd::drawInitialCube(float l, vec3 origin, vec3 ax, vec3 rotation, MString name);
 	void extrude(MString objName, int startIdx, int endIdx, vec3 translate, vec3 rotation, vec3 scale);
 	static Manager* manager;
 };

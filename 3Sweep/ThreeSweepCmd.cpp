@@ -109,7 +109,7 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 
 		info = pathWitoutExtension.c_str();
 		info += ".txt";
-		MGlobal::displayInfo(info);
+		MGlobal::displayInfo("Edge Path: " + info);
 		vec3 camera = vec3(0.0, 0.0, -1.0);
 		manager->init(camera, pathWitoutExtension + ".txt");
 	}
@@ -123,67 +123,82 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 	}
 
 	manager->curt_solution->compute();
+	int shape = manager->curt_solution->shape;
 
-	//TODO Geometry
-	Circle* circle_plane = (Circle*)(manager->curt_solution->curt);
-
-	if (!circle_plane) {
+	Geometry* plane = (Geometry*)(manager->curt_solution->curt);
+	
+	if (!plane) {
 		MGlobal::displayInfo("Geometry is not computed");
 		return MStatus::kSuccess;
 	}
 
 	if (nCurves % 3 == 2) {
-		MGlobal::displayInfo("Geometry is computed");
-		
-		int type = 0;//TODO 0: cylinder, 1: cube
-		if (type == 0) {
+		if (shape == Solution::Shape::CIRCLE) {
+			MGlobal::displayInfo("Circle is computed");
+			Circle* circle_plane = (Circle*)plane;
 			vec3 origin = circle_plane->getOrigin();
 			float radius = circle_plane->getRadius();
 			vec3 normal = circle_plane->getNormal();
-
 			drawInitialCylinder(radius, origin, normal, subdivisionsX, curGeometry);
 		}
-		else if (type == 1) {
-			//TODO
-			drawInitialCube(1, 1, 1, vec3(1,1,1), vec3(1, 1, 1), curGeometry);
+		else if (shape == Solution::Shape::SQUARE) {
+			MGlobal::displayInfo("Square is computed");
+			Square* square_plane = (Square*)plane;
+			vec3 origin = square_plane->getOrigin();
+			float length = square_plane->getLength();
+			vec3 normal = square_plane->getNormal();
+			vec3 rotation = vec3(0, 0, 0);
+			drawInitialCube(length, origin, normal, rotation, curGeometry);
 		}
-		
+		else {
+			info = "this shape is not supported!";
+			MGlobal::displayInfo(info);
+		}
 	}else if (nCurves % 3 == 0) {
-
 		MGlobal::displayInfo("Extruding");
 
 		//int index = nCurves/ 3; //circle index
 		MString thirdStroke = "curve";
 		thirdStroke += nCurves;//the third curve name
 
-		//build temp circle
-		Circle* pre_circle = (Circle*)(manager->curt_solution->history[0]);
-		Circle* curt_circle = pre_circle;
+		//build temp plane
+		Geometry* pre_plane = (manager->curt_solution->history[0]);
+		Geometry* curt_plane = pre_plane;
 
 		for (int i = 1; i < manager->curt_solution->history.size(); i++) {
 			// Done:: change to list of circle
-			curt_circle = (Circle*)(manager->curt_solution->history[i]);
-			vec3 lastNormal = pre_circle->getNormal();
-			vec3 curNormal = curt_circle->getNormal();
-			float lastRadius = pre_circle->getRadius();
-			float curRadius = curt_circle->getRadius();
-			float scaleRatio = (curRadius/ lastRadius) * (curRadius / lastRadius);
-			// TEST START
-			MString radiusString = "Radius: ";
-			radiusString += curRadius;
-			radiusString += "; LastRadius: ";
-			radiusString += lastRadius;
-			MGlobal::displayInfo(radiusString);
-			// TEST END
-			vec3 start = pre_circle->getOrigin(); 
-			vec3 end = curt_circle->getOrigin();
+			curt_plane = (manager->curt_solution->history[i]);
+
+			vec3 preNormal = pre_plane->getNormal();
+			vec3 curNormal = curt_plane->getNormal();
+			float scaleRatio = 0;
+			if (shape == Solution::Shape::CIRCLE) {
+				float preRadius = pre_plane->getRadius();
+				float curRadius = curt_plane->getRadius();
+				scaleRatio = (curRadius / preRadius) * (curRadius / preRadius);
+				// TEST START
+				MString radiusString = "Radius: ";
+				radiusString += curRadius;
+				radiusString += "; LastRadius: ";
+				radiusString += preRadius;
+				MGlobal::displayInfo(radiusString);
+				// TEST END
+			}
+			else if (shape == Solution::Shape::SQUARE) {
+				float lastLength = pre_plane->getLength();
+				float curLength = curt_plane->getLength();
+				scaleRatio = (curLength / lastLength) * (curLength / lastLength);
+			}
+
+			vec3 start = pre_plane->getOrigin(); 
+			vec3 end = curt_plane->getOrigin();
 			// update pre_circle
-			pre_circle = curt_circle;
+			pre_plane = curt_plane;
 			int startIdx = subdivisionsX;
 			int endIdx = subdivisionsX * 2-1;
 
 			vec3 translateW = end - start;//word 
-			float angle = glm::degrees(glm::acos(glm::dot(glm::normalize(lastNormal),glm::normalize(curNormal))));
+			float angle = glm::degrees(glm::acos(glm::dot(glm::normalize(preNormal),glm::normalize(curNormal))));
 			vec3 rotationL = vec3(0, angle,0);
 			vec3 scaleL = vec3(scaleRatio, scaleRatio, scaleRatio);
 			extrude(curGeometry, startIdx, endIdx, translateW, rotationL, scaleL);
@@ -219,19 +234,18 @@ void ThreeSweepCmd::drawInitialCylinder(float radius, vec3 origin, vec3 ax, int 
 	MGlobal::executeCommand(cmd, true);
 }
 
-void ThreeSweepCmd::drawInitialCube(float w, float h, float d, vec3 origin, vec3 ax, MString name) {
+void ThreeSweepCmd::drawInitialCube(float l, vec3 origin, vec3 ax, vec3 rotation, MString name) {
 	MString cmd = "";
 	cmd = "polyCube -w ";
-	cmd += w;
-	cmd += " -h 0.0001 ";
-	cmd += " -d ";
-	cmd += d;
-	cmd += " -rcp 0 -cuv 3 -ch 1 -ax ";
+	cmd += l;
+	cmd += " -h 0.0001 -d ";
+	cmd += l;
+	cmd += " -ax ";
 	cmd += ax.x;
 	cmd += " ";
 	cmd += ax.y;
 	cmd += " ";
-	cmd += 0;
+	cmd += ax.z;
 	cmd += " -n ";
 	cmd += name;
 	cmd += "; move -r ";
