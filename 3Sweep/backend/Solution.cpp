@@ -96,17 +96,18 @@ bool Solution::update_square()
 		// TODO: whether to use the max to defin the length of the square
 		float len = pre_square->getLength();
 		if (max != 0.0f && min != 0.0f) len = max - min;
-		else if (max != 0.0f) len = 2.0 * max;
-		else if (min != 0.0f) len = -2.0 * min;
+		else if (max != 0.0f && i != input.size() - 1) len = 2.0 * max;
+		else if (min != 0.0f && i != input.size() - 1) len = -2.0 * min;
 		// else remain the len
 
 		// construct a new square 
 		// TODO:: current normal is just for 2d
 		// REMEMBER THE '-' HERE!!!!
-		if (i == input.size() - 1) {
-			len = pre_square->getLength();
-			normal_2d = -pre_square->getNormal();
-		}
+		// TODO 
+		//if (i == input.size() - 1) {
+		//	len = pre_square->getLength();
+		//	normal_2d = -pre_square->getNormal();
+		//}
 		Square* new_square = new Square(origin, len, -normal_2d);
 		// get the circle pointer of previous one
 		pre_square = new_square;
@@ -205,17 +206,17 @@ bool Solution::update_circle()
 		}
 		float radius = pre_circle->getRadius();
 		if (max != 0.0f && min != 0.0f) radius = 0.5f * (max - min);
-		else if (max != 0.0f) radius = max;
-		else if (min != 0.0f) radius = -min;
+		else if (max != 0.0f && i != input.size() - 1) radius = max;
+		else if (min != 0.0f && i != input.size() - 1) radius = -min;
 		// else remain the radius
 
 		// construct a new circle 
 		// TODO:: current normal is just for 2d
 		// REMEMBER THE '-' HERE!!!!
-		if (i == input.size() - 1) {
-			radius = pre_circle->getRadius();
-			normal_2d = -pre_circle->getNormal();
-		}
+		//if (i == input.size() - 1) {
+		//	radius = pre_circle->getRadius();
+		//	normal_2d = -pre_circle->getNormal();
+		//}
 		Circle* new_circle = new Circle(origin, radius, -normal_2d);
 		// get the circle pointer of previous one
 		pre_circle = new_circle;
