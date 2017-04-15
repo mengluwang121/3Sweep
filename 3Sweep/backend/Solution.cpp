@@ -73,8 +73,8 @@ bool Solution::update_square()
 	for (int i = 4; i < input.size(); i++) {
 		// get curt point
 		vec3 curt_point = input.getPoint(i);
-		vec3 pre_point = input.getPoint(i - 1);
-		vec3 next_point = i == input.size() ? curt_point : input.getPoint(i + 1);
+		vec3 pre_point = i == 4 ? curt_point : input.getPoint(i - 1);
+		vec3 next_point = i == input.size() - 1 ? curt_point : input.getPoint(i + 1);
 		// compute the new origin, normal; calculate the new length
 		// TODO:: compute origin with two edges
 		vec3 origin = curt_point;
@@ -103,6 +103,10 @@ bool Solution::update_square()
 		// construct a new square 
 		// TODO:: current normal is just for 2d
 		// REMEMBER THE '-' HERE!!!!
+		if (i == input.size() - 1) {
+			len = pre_square->getLength();
+			normal_2d = -pre_square->getNormal();
+		}
 		Square* new_square = new Square(origin, len, -normal_2d);
 		// get the circle pointer of previous one
 		pre_square = new_square;
@@ -208,6 +212,10 @@ bool Solution::update_circle()
 		// construct a new circle 
 		// TODO:: current normal is just for 2d
 		// REMEMBER THE '-' HERE!!!!
+		if (i == input.size() - 1) {
+			radius = pre_circle->getRadius();
+			normal_2d = -pre_circle->getNormal();
+		}
 		Circle* new_circle = new Circle(origin, radius, -normal_2d);
 		// get the circle pointer of previous one
 		pre_circle = new_circle;
