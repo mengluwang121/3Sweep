@@ -110,9 +110,8 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		info = pathWitoutExtension.c_str();
 		info += ".txt";
 		MGlobal::displayInfo(info);
-		Solution::Shape shape = Solution::Shape::CIRCLE;
 		vec3 camera = vec3(0.0, 0.0, -1.0);
-		manager->init(camera, pathWitoutExtension + ".txt", shape);
+		manager->init(camera, pathWitoutExtension + ".txt");
 	}
 
 	MString test = "TEST: ";

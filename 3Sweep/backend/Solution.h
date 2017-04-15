@@ -11,21 +11,21 @@ using namespace glm;
 class Solution
 {
 public:	
-	enum Shape { CIRCLE, SQUARE };
+	enum Shape { NOTHING, CIRCLE, SQUARE };
 	Solution() 
 	{
 		curt = nullptr;
 	}
 	Solution(const Stroke & stroke)
 	{
-		Solution(vec3(0.0f, 0.0f, -1.0f), stroke, CIRCLE);
+		Solution(vec3(0.0f, 0.0f, -1.0f), stroke);
 	}
-	Solution(const vec3 & cd, const Stroke & stroke, Shape sh) 
+	Solution(const vec3 & cd, const Stroke & stroke) 
 	{
 		curt = nullptr;
 		camera_direction = vec3(cd);
 		input = Stroke(stroke);
-		shape = sh;
+		shape = CIRCLE;
 	}
 	~Solution()
 	{
@@ -45,7 +45,7 @@ public:
 	std::vector<Geometry*> history;
 	Stroke input;
 	std::vector<vec3> contours;	
-	Shape shape = CIRCLE; // as default circle
+	Shape shape = NOTHING; // as default NOTHING
 private:
 	vec3 camera_direction;
 };

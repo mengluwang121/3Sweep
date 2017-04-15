@@ -9,7 +9,7 @@ public:
 	Manager();
 	~Manager();
 	void count();
-	void init(const vec3 & camera_direction, std::string filename, Solution::Shape shape);
+	void init(const vec3 & camera_direction, std::string filename);
 	void update(const vec3 & point, bool is_line);
 	void update_line(const vec3 & point);
 	void update_curve(const vec3 & point);

@@ -24,11 +24,11 @@ void Manager::count()
 	number_of_strokes++;
 }
 
-void Manager::init(const vec3 & camera_direction, std::string filename, Solution::Shape shape)
+void Manager::init(const vec3 & camera_direction, std::string filename)
 {
 	if (curt_solution) return;
 	Stroke stroke = Stroke();
-	curt_solution = new Solution(camera_direction, stroke, shape);
+	curt_solution = new Solution(camera_direction, stroke);
 	curt_solution->set_contours(filename);
 }
 

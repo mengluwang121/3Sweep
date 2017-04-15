@@ -6,6 +6,20 @@ bool Solution::compute()
 {
 	// TODO
 	// for circle
+	if (input.size() < 4) return false;
+	if (shape == NOTHING) {
+		vec3 first = input.getPoint(0);
+		vec3 second = input.getPoint(1);
+		vec3 third = input.getPoint(2);
+		vec3 fourth = input.getPoint(3);
+
+		// two strokes 
+		vec3 stroke1 = second - first;
+		vec3 stroke2 = fourth - third; // TODO: third or second
+
+		shape = dot(stroke1, stroke2) < 0 ? CIRCLE : SQUARE;
+	}	
+
 	if (shape == CIRCLE) {
 		if (!curt) return compute_circle();
 		return update_circle();
