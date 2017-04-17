@@ -110,7 +110,7 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		info = pathWitoutExtension.c_str();
 		info += ".txt";
 		MGlobal::displayInfo("Edge Path: " + info);
-		vec3 camera = vec3(0.0, 0.0, -1.0);
+		vec3 camera = vec3(0.0, -1.0, 0.0);
 		manager->init(camera, pathWitoutExtension + ".txt");
 	}
 

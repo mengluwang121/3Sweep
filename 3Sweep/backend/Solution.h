@@ -18,14 +18,14 @@ public:
 	}
 	Solution(const Stroke & stroke)
 	{
-		Solution(vec3(0.0f, 0.0f, -1.0f), stroke);
+		Solution(vec3(0.0f, -1.0f, 0.0f), stroke);
 	}
 	Solution(const vec3 & cd, const Stroke & stroke) 
 	{
 		curt = nullptr;
 		camera_direction = vec3(cd);
 		input = Stroke(stroke);
-		shape = NOTHING;
+		shape = NOTHING; // as default NOTHING
 	}
 	~Solution()
 	{
@@ -45,7 +45,7 @@ public:
 	std::vector<Geometry*> history;
 	Stroke input;
 	std::vector<vec3> contours;	
-	Shape shape = NOTHING; // as default NOTHING
+	Shape shape;
 private:
 	vec3 camera_direction;
 };

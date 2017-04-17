@@ -46,7 +46,7 @@ bool Solution::compute_square()
 	vec3 stroke2 = fourth - third; // TODO: third or second
 	
 	// origin
-	vec3 origin = 0.5f * 0.5f * (first + second) + 0.5f * stroke2;
+	vec3 origin = 0.5f * (first + second) + 0.5f * stroke2;
 
 	// length
 	float len = length(stroke1);
