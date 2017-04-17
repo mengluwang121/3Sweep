@@ -195,7 +195,7 @@ bool Solution::update_circle()
 		vec3 next_point = i == input.size() - 1 ? curt_point : input.getPoint(i + 1);
 		// compute the new origin, normal; calculate the new radius
 		// TODO:: compute origin with two edges
-		vec3 origin = curt_point;
+		vec3 origin = pre_circle->getOrigin() + (curt_point - pre_point) + length(curt_point - pre_point) / length_xy * normal_z * vec3(0.0, 0.0f, 1.0f);
 		// TODO:: curt - pre is not correct
 		vec3 normal_2d = normalize(next_point - pre_point);
 		vec3 perpend = normalize(cross(normal_2d, camera_direction));
@@ -203,7 +203,7 @@ bool Solution::update_circle()
 		// compute the radius by shooting ray at each contour point
 		float max = 0.0f, min = 0.0f;
 		for (int j = 0; j < contours.size(); j++) {
-			vec3 ray = contours[j] - origin;
+			vec3 ray = contours[j] - curt_point;
 			vec3 ray_norm = normalize(ray);
 			if (abs(dot(ray_norm, normal_2d)) < TH_DOT_ERR) {
 				float projection = dot(ray, perpend);
@@ -216,7 +216,7 @@ bool Solution::update_circle()
 		else if (max != 0.0f && i) radius = max;
 		else if (min != 0.0f && i) radius = -min;
 		// else remain the radius
-		if(radius > TH_MAX_NUMBER_OF) radius = pre_circle->getRadius();
+		if(radius > TH_MAX_NUMBER_OF * pre_circle->getRadius()) radius = pre_circle->getRadius();
 		// construct a new circle 
 		// TODO:: current normal is just for 2d
 		// REMEMBER THE '-' HERE!!!!
