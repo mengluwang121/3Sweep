@@ -94,7 +94,7 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			info += point.z;
 			MGlobal::displayInfo("add point: " + info);
 			vec3 to_add(point.x, point.y, point.z);
-			points.push_back(to_add);
+			points.push_back(convertCoordinates(to_add, false));
 		}
 	}
 
@@ -136,10 +136,11 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		if (shape == Solution::Shape::CIRCLE) {
 			MGlobal::displayInfo("Circle is computed");
 			Circle* circle_plane = (Circle*)plane;
-			vec3 origin = circle_plane->getOrigin();
+			vec3 tempOrigin = circle_plane->getOrigin();
+			vec3 origin = convertCoordinates(tempOrigin, true);
 			float radius = circle_plane->getRadius();
 			vec3 tempNormal = circle_plane->getNormal();
-			vec3 normal = vec3(tempNormal.z, -tempNormal.y, tempNormal.x);//switch to maya plane
+			vec3 normal = convertCoordinates(vec3(tempNormal.z, -tempNormal.y, tempNormal.x), true);//switch to maya plane
 			drawInitialCylinder(radius, origin, tempNormal, subdivisionsX, curGeometry);
 		}
 		else if (shape == Solution::Shape::SQUARE) {
@@ -198,7 +199,7 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			int startIdx = subdivisionsX;
 			int endIdx = subdivisionsX * 2-1;
 
-			vec3 translateW = end - start;//word 
+			vec3 translateW = convertCoordinates(end - start, true);//world 
 			float angleZ = glm::degrees(glm::acos(glm::dot(vec3(preNormal.x, preNormal.y, 0),vec3(curNormal.x, curNormal.y, 0))));
 			float angleY = glm::degrees(glm::acos(glm::dot(vec3(preNormal.x, 0, preNormal.z), vec3(curNormal.x, 0, curNormal.z))));
 			float angleX = glm::degrees(glm::acos(glm::dot(vec3(0, preNormal.y, preNormal.z), vec3(0, curNormal.y, curNormal.z))));
@@ -213,7 +214,13 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 	return MStatus::kSuccess;
 }
 
+vec3 ThreeSweepCmd::convertCoordinates(vec3 point, bool reverse) {
+	if (!reverse) return vec3(point.z, point.x, point.y);
+	return vec3(point.y, point.z, point.x);
+}
+
 void ThreeSweepCmd::drawInitialCylinder(float radius, vec3 origin, vec3 ax, int sx, MString name) {
+
 	MString cmd = "";
 	cmd = "polyCylinder -h 0.001 -r ";
 	cmd += radius;
