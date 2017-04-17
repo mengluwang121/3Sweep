@@ -138,8 +138,9 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			Circle* circle_plane = (Circle*)plane;
 			vec3 origin = circle_plane->getOrigin();
 			float radius = circle_plane->getRadius();
-			vec3 normal = circle_plane->getNormal();
-			drawInitialCylinder(radius, origin, normal, subdivisionsX, curGeometry);
+			vec3 tempNormal = circle_plane->getNormal();
+			vec3 normal = vec3(tempNormal.z, -tempNormal.y, tempNormal.x);//switch to maya plane
+			drawInitialCylinder(radius, origin, tempNormal, subdivisionsX, curGeometry);
 		}
 		else if (shape == Solution::Shape::SQUARE) {
 			MGlobal::displayInfo("Square is computed");
@@ -220,7 +221,7 @@ void ThreeSweepCmd::drawInitialCylinder(float radius, vec3 origin, vec3 ax, int 
 	cmd += " ";
 	cmd += ax.y;
 	cmd += " "; 
-	cmd += 0;
+	cmd += ax.z;
 	cmd += " -n ";
 	cmd += name;
 	cmd += "; move -r ";
