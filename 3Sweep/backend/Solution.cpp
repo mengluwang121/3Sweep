@@ -183,6 +183,11 @@ bool Solution::update_circle()
 	// if size < 4: means the init is not over
 	if (input.size() < 4) return false;
 	Circle* pre_circle = (Circle*)curt;
+	// to record the normal_z 
+	float normal_z = curt->getNormal().z;
+	// to calculate the xy's length
+	float length2_xy = 1.0f - normal_z * normal_z;
+	float length_xy = sqrtf(length2_xy);
 	for (int i = 4; i < input.size(); i++) {		
 		// get curt point
 		vec3 curt_point = input.getPoint(i);
@@ -219,7 +224,8 @@ bool Solution::update_circle()
 		//	radius = pre_circle->getRadius();
 		//	normal_2d = -pre_circle->getNormal();
 		//}
-		Circle* new_circle = new Circle(origin, radius, -normal_2d);
+		vec3 normal = normalize(length_xy * normal_2d + vec3(0.0f, 0.0f, normal_z));
+		Circle* new_circle = new Circle(origin, radius, -normal);
 		// get the circle pointer of previous one
 		pre_circle = new_circle;
 		// push the previous circle to the history list
