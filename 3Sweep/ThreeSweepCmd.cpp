@@ -199,8 +199,11 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			int endIdx = subdivisionsX * 2-1;
 
 			vec3 translateW = end - start;//word 
-			float angle = glm::degrees(glm::acos(glm::dot(glm::normalize(preNormal),glm::normalize(curNormal))));
-			vec3 rotationL = vec3(0, angle,0);
+			float angleZ = glm::degrees(glm::acos(glm::dot(vec3(preNormal.x, preNormal.y, 0),vec3(curNormal.x, curNormal.y, 0))));
+			float angleY = glm::degrees(glm::acos(glm::dot(vec3(preNormal.x, 0, preNormal.z), vec3(curNormal.x, 0, curNormal.z))));
+			float angleX = glm::degrees(glm::acos(glm::dot(vec3(0, preNormal.y, preNormal.z), vec3(0, curNormal.y, curNormal.z))));
+			vec3 rotationL = vec3(angleX, angleY, angleZ);
+
 			vec3 scaleL = vec3(scaleRatio, scaleRatio, scaleRatio);
 			extrude(curGeometry, startIdx, endIdx, translateW, rotationL, scaleL);
 	
