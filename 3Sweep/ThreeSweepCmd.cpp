@@ -205,7 +205,7 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			vec3 rotationL = vec3(angleX, angleY, angleZ);
 
 			vec3 scaleL = vec3(scaleRatio, scaleRatio, scaleRatio);
-			extrude(curGeometry, startIdx, endIdx, translateW, rotationL, scaleL);
+			extrude(curGeometry, startIdx, endIdx, translateW, vec3(0, 0, 0), scaleL);
 	
 		}
 	}
@@ -272,7 +272,7 @@ void ThreeSweepCmd::extrude(MString objName, int startIdx, int endIdx, vec3 tran
 	cmd += " ";
 	cmd += translate.y;
 	cmd += " ";
-	cmd += translate.z; 
+	cmd += -translate.z; 
 	cmd += " -lr ";
 	cmd += rotation.x;
 	cmd += " ";
