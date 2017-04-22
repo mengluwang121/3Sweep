@@ -94,7 +94,7 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			info += point.z;
 			MGlobal::displayInfo("add point: " + info);
 			vec3 to_add(point.x, point.y, point.z);
-			points.push_back(convertCoordinates(to_add, false));
+			points.push_back(to_add);
 		}
 	}
 
@@ -110,7 +110,7 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		info = pathWitoutExtension.c_str();
 		info += ".txt";
 		MGlobal::displayInfo("Edge Path: " + info);
-		vec3 camera = vec3(0.0, -1.0, 0.0);
+		vec3 camera = vec3(0.0, 0.0, -1.0);
 		manager->init(camera, pathWitoutExtension + ".txt");
 	}
 
@@ -136,11 +136,11 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		if (shape == Solution::Shape::CIRCLE) {
 			MGlobal::displayInfo("Circle is computed");
 			Circle* circle_plane = (Circle*)plane;
-			vec3 tempOrigin = circle_plane->getOrigin();
-			vec3 origin = convertCoordinates(tempOrigin, true);
+			vec3 origin = circle_plane->getOrigin();
+			//vec3 origin = convertCoordinates(tempOrigin, true);
 			float radius = circle_plane->getRadius();
 			vec3 tempNormal = circle_plane->getNormal();
-			vec3 normal = convertCoordinates(vec3(tempNormal.z, -tempNormal.y, tempNormal.x), true);//switch to maya plane
+			//vec3 normal = vec3(tempNormal.z, -tempNormal.y, tempNormal.x);//switch to maya plane
 			drawInitialCylinder(radius, origin, tempNormal, subdivisionsX, curGeometry);
 		}
 		else if (shape == Solution::Shape::SQUARE) {
@@ -199,14 +199,14 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			int startIdx = subdivisionsX;
 			int endIdx = subdivisionsX * 2-1;
 
-			vec3 translateW = convertCoordinates(end - start, true);//world 
+			vec3 translateW = end - start;//world 
 			float angleZ = glm::degrees(glm::acos(glm::dot(vec3(preNormal.x, preNormal.y, 0),vec3(curNormal.x, curNormal.y, 0))));
 			float angleY = glm::degrees(glm::acos(glm::dot(vec3(preNormal.x, 0, preNormal.z), vec3(curNormal.x, 0, curNormal.z))));
 			float angleX = glm::degrees(glm::acos(glm::dot(vec3(0, preNormal.y, preNormal.z), vec3(0, curNormal.y, curNormal.z))));
 			vec3 rotationL = vec3(angleX, angleY, angleZ);
 
 			vec3 scaleL = vec3(scaleRatio, scaleRatio, scaleRatio);
-			extrude(curGeometry, startIdx, endIdx, translateW, vec3(0, 0, 0), scaleL);
+			extrude(curGeometry, startIdx, endIdx, translateW, vec3(0,0,0), scaleL);
 	
 		}
 	}

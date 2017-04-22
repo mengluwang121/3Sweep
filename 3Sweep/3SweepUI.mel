@@ -71,7 +71,7 @@ global proc invoke3SweepCmd(){
 	imagePlane -e -fn $path -mr false $myImagePlane[0];
 	$imageSize = `imagePlane -q -w -h $myImagePlane[1]` ;
 
-	setAttr "imagePlane1.rotateX" -90;
+	//setAttr "imagePlane1.rotateX" -90;
 	ThreeSweepCmd -pth $path;
 	createNode ThreeSweepNode -n ThreeSweepNode1;
 

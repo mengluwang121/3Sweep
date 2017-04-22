@@ -52,7 +52,7 @@ bool Solution::compute_square()
 	float len = length(stroke1);
 
 	// TODO: normal
-	vec3 normal = vec3(0.0, -1.0, 0.0);
+	vec3 normal = vec3(0.0, 0.0, -1.0);
 
 	// Square
 	curt = new Square(origin, len, normal);
