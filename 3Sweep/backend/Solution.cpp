@@ -195,7 +195,7 @@ bool Solution::update_circle()
 		vec3 next_point = i == input.size() - 1 ? curt_point : input.getPoint(i + 1);
 		// compute the new origin, normal; calculate the new radius
 		// TODO:: compute origin with two edges
-		vec3 origin = pre_circle->getOrigin() + (curt_point - pre_point) + length(curt_point - pre_point) / length_xy * normal_z * vec3(0.0, 0.0f, 1.0f);
+		vec3 origin = pre_circle->getOrigin() + (curt_point - pre_point) + length(curt_point - pre_point) / length_xy * normal_z * vec3(0.0, 0.0f, -1.0f);
 		// TODO:: curt - pre is not correct
 		vec3 normal_2d = normalize(next_point - pre_point);
 		vec3 perpend = normalize(cross(normal_2d, camera_direction));
@@ -224,7 +224,7 @@ bool Solution::update_circle()
 		//	radius = pre_circle->getRadius();
 		//	normal_2d = -pre_circle->getNormal();
 		//}
-		vec3 normal = normalize(length_xy * normal_2d + vec3(0.0f, 0.0f, normal_z));
+		vec3 normal = normalize(length_xy * normal_2d - vec3(0.0f, 0.0f, normal_z));
 		Circle* new_circle = new Circle(origin, radius, -normal);
 		// get the circle pointer of previous one
 		pre_circle = new_circle;

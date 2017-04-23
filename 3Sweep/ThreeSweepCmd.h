@@ -22,10 +22,11 @@ public:
 	static void* creator() { return new ThreeSweepCmd(); }
 	MStatus doIt(const MArgList& args);
 	int preProcess(MString path);
-	void drawCircle(Circle* result, int numStrokes);
-	void ThreeSweepCmd::drawInitialCylinder(float radius, vec3 origin, vec3 ax, int sx, MString name);
-	void ThreeSweepCmd::drawInitialCube(float l, vec3 origin, vec3 ax, vec3 rotation, MString name);
+	
+	void drawInitialCylinder(float radius, vec3 origin, vec3 ax, int sx, MString name);
+	void drawInitialCube(float l, vec3 origin, vec3 ax, vec3 rotation, MString name);
 	void extrude(MString objName, int startIdx, int endIdx, vec3 translate, vec3 rotation, vec3 scale);
+	void extrudeAlongCurve(MString objName, int startIdx, int endIdx, MString curve, vec3 scale);
 	vec3 convertCoordinates(vec3 point, bool reverse);
 	static Manager* manager;
 };

@@ -200,14 +200,35 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			int endIdx = subdivisionsX * 2-1;
 
 			vec3 translateW = end - start;//world 
-			float angleZ = glm::degrees(glm::acos(glm::dot(vec3(preNormal.x, preNormal.y, 0),vec3(curNormal.x, curNormal.y, 0))));
-			float angleY = glm::degrees(glm::acos(glm::dot(vec3(preNormal.x, 0, preNormal.z), vec3(curNormal.x, 0, curNormal.z))));
-			float angleX = glm::degrees(glm::acos(glm::dot(vec3(0, preNormal.y, preNormal.z), vec3(0, curNormal.y, curNormal.z))));
-			vec3 rotationL = vec3(angleX, angleY, angleZ);
+			float angleZ = glm::degrees(glm::acos(glm::dot(vec3(preNormal.x, preNormal.y, preNormal.z),vec3(curNormal.x, curNormal.y, curNormal.z))));
+			//float angleY = glm::degrees(glm::acos(glm::dot(vec3(preNormal.x, 0, preNormal.z), vec3(curNormal.x, 0, curNormal.z))));
+			//float angleX = glm::degrees(glm::acos(glm::dot(vec3(0, preNormal.y, preNormal.z), vec3(0, curNormal.y, curNormal.z))));
+			vec3 rotationL = vec3(0, angleZ, 0);
 
 			vec3 scaleL = vec3(scaleRatio, scaleRatio, scaleRatio);
-			extrude(curGeometry, startIdx, endIdx, translateW, vec3(0,0,0), scaleL);
-	
+
+			if (true) {
+			MString cmd = "circle -r ";
+			cmd += curt_plane->getRadius();
+			cmd += " -nr ";
+			cmd += curNormal.x;
+			cmd += " ";
+			cmd += curNormal.y;
+			cmd += " ";
+			cmd += curNormal.z;
+			cmd += " -c ";
+			cmd += curt_plane->getOrigin().x;
+			cmd += " ";
+			cmd += curt_plane->getOrigin().y;
+			cmd += " ";
+			cmd += curt_plane->getOrigin().z;
+			cmd += " ";
+			MGlobal::displayInfo(cmd);
+			MGlobal::executeCommand(cmd, true);
+			}
+
+			extrude(curGeometry, startIdx, endIdx, translateW, rotationL, scaleL);
+		
 		}
 	}
 
@@ -279,7 +300,7 @@ void ThreeSweepCmd::extrude(MString objName, int startIdx, int endIdx, vec3 tran
 	cmd += " ";
 	cmd += translate.y;
 	cmd += " ";
-	cmd += -translate.z; 
+	cmd += translate.z; 
 	cmd += " -lr ";
 	cmd += rotation.x;
 	cmd += " ";
@@ -299,6 +320,28 @@ void ThreeSweepCmd::extrude(MString objName, int startIdx, int endIdx, vec3 tran
 	cmd += ":";
 	cmd += endIdx;
 	cmd += "]";
+	MGlobal::displayInfo(cmd);
+	MGlobal::executeCommand(cmd, true);
+}
+
+void ThreeSweepCmd::extrudeAlongCurve(MString objName, int startIdx, int endIdx, MString curve, vec3 scale) {
+	MString cmd = "PolyExtrude; polyExtrudeFacet -constructionHistory 1 -keepFacesTogether 1 -pvx ";
+	cmd += "0 -pvy 1 -pvz 0 -divisions 1 -twist 0 -taper 1 -off 0 -thickness 0 -smoothingAngle 30";
+	cmd += " -ls ";
+	cmd += scale.x;
+	cmd += " ";
+	cmd += scale.y;
+	cmd += " ";
+	cmd += scale.z;
+	cmd += " -inputCurve ";
+	cmd += curve;
+	cmd += " ";
+	cmd += objName;
+	cmd += ".f[";
+	cmd += startIdx;
+	cmd += ":";
+	cmd += endIdx;
+	cmd += "]"; 
 	MGlobal::displayInfo(cmd);
 	MGlobal::executeCommand(cmd, true);
 }
