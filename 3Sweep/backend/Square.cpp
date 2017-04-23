@@ -4,7 +4,6 @@
 
 Square::Square()
 {
-	Square(vec3(0.0, 0.0, 0.0), 1.0, 1.0, vec3(0.0, 0.0, 1.0));
 }
 
 Square::Square(const vec3 & original_point, double length_distance, double width_distance, const vec3 & normal_vector)
@@ -13,6 +12,15 @@ Square::Square(const vec3 & original_point, double length_distance, double width
 	length = length_distance;
 	width = width_distance;
 	normal = normalize(vec3(normal_vector));
+}
+
+Square::Square(const vec3 & original_point, double length_distance, double width_distance, const vec3 & normal_vector, std::vector<vec3>& vertices)
+{
+	origin = vec3(original_point);
+	length = length_distance;
+	width = width_distance;
+	normal = normalize(vec3(normal_vector));
+	for (auto vertex : vertices) vertex_list.push_back(vertex);
 }
 
 
@@ -40,6 +48,11 @@ void Square::setNormal(vec3 normal_vector)
 	normal = normal_vector;
 }
 
+void Square::addVertex(vec3 vertex_point)
+{
+	vertex_list.push_back(vertex_point);
+}
+
 const vec3 Square::getOrigin()
 {
 	return origin;
@@ -58,4 +71,14 @@ const double Square::getWidth()
 const vec3 Square::getNormal()
 {
 	return normal;
+}
+
+const std::vector<vec3> Square::getVertices()
+{
+	return vertex_list;
+}
+
+const bool Square::isOriginal()
+{
+	return vertex_list.size() != 0;
 }

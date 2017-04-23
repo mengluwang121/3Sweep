@@ -78,8 +78,14 @@ bool Solution::compute_square()
 	// TODO: normal
 	vec3 normal = normalize(p3 - p2);
 
+	// list of points
+	std::vector<vec3> vertices;
+	vertices.push_back(p0);
+	vertices.push_back(p1);
+	vertices.push_back(p2);
+	vertices.push_back(p3);
 	// Square
-	curt = new Square(origin, length, width, normal);
+	curt = new Square(origin, length, width, normal, vertices);
 	history.push_back(curt);
 	return update_square();
 }
