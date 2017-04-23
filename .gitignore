@@ -11,3 +11,8 @@
 *.sdf
 .vs/3Sweep/v14/.suo
 *.sdf
+*.exp
+*.txt
+*.obj
+*.obj
+*.pdb
