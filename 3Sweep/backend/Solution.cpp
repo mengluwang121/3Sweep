@@ -34,30 +34,54 @@ bool Solution::compute()
 
 bool Solution::compute_square()
 {
-	if (input.size() < 4) return false;
+	// camera is always (0, 0, -1) in this case
+	// only 3 strokes can compute the rectangle
+	if (input.size() < 6) return false;
 
-	vec3 first = input.getPoint(0);
-	vec3 second = input.getPoint(1);
-	vec3 third = input.getPoint(2);
-	vec3 fourth = input.getPoint(3);
+	vec3 p0 = input.getPoint(0);
+	vec3 p1 = 0.5f * (input.getPoint(1) + input.getPoint(2));
+	vec3 p2 = 0.5f * (input.getPoint(3) + input.getPoint(4));
+	vec3 p3 = input.getPoint(5);
 	
-	// two strokes 
-	vec3 stroke1 = second - first;
-	vec3 stroke2 = fourth - third; // TODO: third or second
+	// 3 strokes 
+	vec3 stroke1 = p1 - p0;
+	vec3 stroke2 = p2 - p1; // TODO: third or second
+	vec3 stroke3 = p3 - p2;
+
+	// compute CN = dot(stroke_m, stroke_ohter)
+	float C1 = dot(stroke1, stroke2);
+	float C2 = dot(stroke2, stroke3);
+	float C3 = dot(stroke3, stroke1);
+
+	// compute z01, z12, z23
+	// C1 + z01 * z12 = 0;
+	// C2 + z12 * z23 = 0;
+	// C3 + z23 * z01 = 0;
+	// z01 > 0; z12 < 0
+	float z01 = sqrtf(max(-C3 * C1 / C2, 0.0f));
+	float z12 = -sqrtf(max(-C1 * C2 / C3, 0.0f));
+	float z23 = -C3 / z01;
 	
+	// update p0, p1, p2, p3
+	p0 += vec3(0.f);
+	p1 += vec3(0.f, 0.f, z01);
+	p2 += vec3(0.f, 0.f, z01 + z12);
+	p3 += vec3(0.f, 0.f, z01 + z12 + z23);
+
 	// origin
-	vec3 origin = 0.5f * (first + second) + 0.5f * stroke2;
+	vec3 origin = 0.5f * (p0 + p2);
 
-	// length
-	float len = length(stroke1);
+	// length and width
+	float length = glm::length(p1 - p0);
+	float width = glm::length(p2 - p1);
 
 	// TODO: normal
-	vec3 normal = vec3(0.0, 0.0, -1.0);
+	vec3 normal = normalize(p3 - p2);
 
 	// Square
-	curt = new Square(origin, len, normal);
+	curt = new Square(origin, length, width, normal);
 	history.push_back(curt);
-	return true;
+	return update_square();
 }
 
 bool Solution::update_square()
@@ -69,47 +93,35 @@ bool Solution::update_square()
 	/**** TODO: update circle ****/
 	// things in the edge detection
 	// if size < 4: means the init is not over
-	if (input.size() < 4) return false;
+	if (input.size() < 6) return false;
 	Square* pre_square = (Square*)curt;
-	for (int i = 4; i < input.size(); i++) {
+	float normal_z = curt->getNormal().z;
+	// to calculate the xy's length
+	float length2_xy = 1.0f - normal_z * normal_z;
+	float length_xy = sqrtf(length2_xy);
+	for (int i = 6; i < input.size(); i++) {
 		// get curt point
 		vec3 curt_point = input.getPoint(i);
-		vec3 pre_point = i == 4 ? curt->getOrigin() : input.getPoint(i - 1);
+		vec3 pre_point = i == 6 ? curt_point : input.getPoint(i - 1);
 		vec3 next_point = i == input.size() - 1 ? curt_point : input.getPoint(i + 1);
-		// compute the new origin, normal; calculate the new length
+		// compute the new origin, normal; calculate the new radius
 		// TODO:: compute origin with two edges
-		vec3 origin = curt_point;
+		vec3 origin = pre_square->getOrigin() + (curt_point - pre_point) + length(curt_point - pre_point) / length_xy * normal_z * vec3(0.0, 0.0f, -1.0f);
 		// TODO:: curt - pre is not correct
 		vec3 normal_2d = normalize(next_point - pre_point);
 		vec3 perpend = normalize(cross(normal_2d, camera_direction));
 		// at this time contour vector should have been inited
 		// compute the radius by shooting ray at each contour point
-		float max = 0.0f, min = 0.0f;
-		for (int j = 0; j < contours.size(); j++) {
-			vec3 ray = contours[j] - origin;
-			vec3 ray_norm = normalize(ray);
-			if (abs(dot(ray_norm, normal_2d)) < TH_DOT_ERR) {
-				float projection = dot(ray, perpend);
-				max = fmaxf(max, projection);
-				min = fminf(min, projection);
-			}
-		}
-		// TODO: whether to use the max to defin the length of the square
-		float len = pre_square->getLength();
-		if (max != 0.0f && min != 0.0f) len = max - min;
-		else if (max != 0.0f) len = 2.0 * max;
-		else if (min != 0.0f) len = -2.0 * min;
-		// else remain the len
-		if (len > TH_MAX_NUMBER_OF) len = pre_square->getLength();
-		// construct a new square 
-		// TODO:: current normal is just for 2d
-		// REMEMBER THE '-' HERE!!!!
-		// TODO 
-		//if (i == input.size() - 1) {
-		//	len = pre_square->getLength();
-		//	normal_2d = -pre_square->getNormal();
-		//}
-		Square* new_square = new Square(origin, len, -normal_2d);
+		/***************Edge Detection*****************/
+		/***
+		
+		Update the length and width
+		
+		***/		
+		/***************Edge Detection*****************/
+		// construct a new square
+		vec3 normal = normalize(length_xy * normal_2d - vec3(0.0f, 0.0f, normal_z));
+		Square* new_square = new Square(origin, pre_square->getLength(), pre_square->getWidth(), normal);
 		// get the circle pointer of previous one
 		pre_square = new_square;
 		// push the previous circle to the history list
