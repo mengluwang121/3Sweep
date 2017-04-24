@@ -137,23 +137,16 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			MGlobal::displayInfo("Circle is computed");
 			Circle* circle_plane = (Circle*)plane;
 			vec3 origin = circle_plane->getOrigin();
-			//vec3 origin = convertCoordinates(tempOrigin, true);
 			float radius = circle_plane->getRadius();
 			vec3 normal = circle_plane->getNormal();
-			//vec3 normal = vec3(tempNormal.z, -tempNormal.y, tempNormal.x);//switch to maya plane
+	
 			MString circleName = curGeometry;
 			circleName += "Circle0";
 			drawCircle(origin, normal, radius, circleName);
 			//drawInitialCylinder(radius, origin, normal, subdivisionsX, curGeometry);
 		}
 		else if (shape == Solution::Shape::SQUARE) {
-			MGlobal::displayInfo("Square is computed");
-			Square* square_plane = (Square*)plane;
-			vec3 origin = square_plane->getOrigin();
-			float length = square_plane->getLength();
-			vec3 normal = square_plane->getNormal();
-			vec3 rotation = vec3(0, 0, 0);
-			drawInitialCube(length, origin, normal, rotation, curGeometry);
+			MGlobal::displayInfo("Square is not computed");
 		}
 		else {
 			info = "this shape is not supported!";
@@ -166,9 +159,27 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		MString thirdStroke = "curve";
 		thirdStroke += nCurves;//the third curve name
 
+		
 		//build temp plane
 		Geometry* pre_plane = (manager->curt_solution->history[0]);
 		Geometry* curt_plane = pre_plane;
+
+		//build the first plane for cube: or cube
+		if (shape == Solution::Shape::SQUARE) {
+			Square* pre_square_plane = (Square*) pre_plane;
+			
+			MString squareName = curGeometry;
+			squareName += "Square0";
+			float length = pre_square_plane->getLength();
+			float width = pre_square_plane->getWidth();
+			vec3 origin = pre_square_plane->getOrigin();
+			vec3 normal = pre_square_plane->getNormal();
+			
+			//vec3 rotation = vec3(0, 0, 0);
+			
+			//drawSquare(origin, normal, length, width, squareName);
+			//drawInitialCube(length, width, origin, vec3(0, 1, 0), rotation, curGeometry);
+		}
 
 		for (int i = 1; i < manager->curt_solution->history.size(); i++) {
 			// Done:: change to list of circle
@@ -178,6 +189,7 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			vec3 curOrigin = curt_plane->getOrigin();
 			vec3 preNormal = pre_plane->getNormal();
 			vec3 curNormal = curt_plane->getNormal();
+
 			float scaleRatio = 0;
 			if (shape == Solution::Shape::CIRCLE) {
 				float preRadius = pre_plane->getRadius();
@@ -194,8 +206,10 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 				curCircle += "Circle";
 				curCircle += i;
 
+				//draw current circle;
 				drawCircle(curOrigin, curNormal, curRadius, curCircle);
 
+				//loft surface
 				if (i == 1) {
 					MString preCircle = curGeometry;
 					preCircle += "Circle";
@@ -208,9 +222,43 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 				// TEST END
 			}
 			else if (shape == Solution::Shape::SQUARE) {
+
+				Square* curt_square_plane = (Square*)curt_plane;
 				float lastLength = pre_plane->getLength();
-				float curLength = curt_plane->getLength();
+				float curLength = curt_square_plane->getLength();
 				scaleRatio = (curLength / lastLength) * (curLength / lastLength);
+				// update pre_circle
+				pre_plane = curt_plane;
+				int startIdx = 0;
+				int endIdx = 0;
+
+				vec3 translateW = curOrigin - preOrigin;//world 
+				float angleZ = glm::degrees(glm::acos(glm::dot(glm::normalize(vec3(preNormal.x, preNormal.y, preNormal.z)),glm::normalize(vec3(curNormal.x, curNormal.y, preNormal.z)))));
+				//float angleY = glm::degrees(glm::acos(glm::dot(glm::normalize(vec3(preNormal.x, 0, preNormal.z)), glm::normalize(vec3(curNormal.x, 0, curNormal.z)))));
+				//float angleX = glm::degrees(glm::acos(glm::dot(glm::normalize(vec3(0, preNormal.y, preNormal.z)), glm::normalize(vec3(0, curNormal.y, curNormal.z)))));
+				vec3 rotationL = vec3(0, angleZ, 0);
+				vec3 scaleL = vec3(scaleRatio, scaleRatio, scaleRatio);
+				//extrude(curGeometry, startIdx, endIdx, translateW, rotationL, scaleL);
+
+				//Square* curt_plane = (Square*)curt_plane;
+				//MString curSquare = curGeometry;
+				//curSquare += "Square";
+				//curSquare += i;
+				//float curLength = curt_plane->getLength();
+				//float curWidth = curt_plane->getWidth();
+				////draw current square;
+				//drawSquare(curOrigin, curNormal, curLength, curWidth, curSquare);
+
+				////loft surface
+				//if (i == 1) {
+				//	MString preCircle = curGeometry;
+				//	preCircle += "Circle";
+				//	preCircle += (i - 1);
+				//	loft(preCircle, curSquare, curGeometry);
+				//}
+				//else {
+				//	loft(curGeometry, curSquare);
+				//}
 			}
 
 			// update pre_circle
@@ -264,13 +312,13 @@ void ThreeSweepCmd::drawInitialCylinder(float radius, vec3 origin, vec3 ax, int 
 	MGlobal::executeCommand(cmd, true);
 }
 
-void ThreeSweepCmd::drawInitialCube(float l, vec3 origin, vec3 ax, vec3 rotation, MString name) {
+void ThreeSweepCmd::drawInitialCube(float length, float width, vec3 origin, vec3 ax, vec3 rotation, MString name) {
 	MString cmd = "";
 	cmd = "polyCube -w ";
-	cmd += l;
-	cmd += " -h 0.0001 -d ";
-	cmd += l;
-	cmd += " -ax ";
+	cmd += length;
+	cmd += " -d ";
+	cmd += width;
+	cmd += " -h 0.0001 -ax ";
 	cmd += ax.x;
 	cmd += " ";
 	cmd += ax.y;
@@ -420,6 +468,61 @@ void ThreeSweepCmd::drawCircle(vec3 origin, vec3 normal, float radius, MString n
 	cmd += name;
 	MGlobal::displayInfo(cmd);
 	MGlobal::executeCommand(cmd, true);
+}
+
+void ThreeSweepCmd::drawSquare(vec3 origin, vec3 normal, float length, float width, MString name) {
+	MString cmd = "nurbsSquare -sl1 ";
+	cmd += length;
+	cmd += " -sl2 ";
+	cmd += width;
+	cmd += " -nr ";
+	cmd += normal.x;
+	cmd += " ";
+	cmd += normal.y;
+	cmd += " ";
+	cmd += normal.z;
+	cmd += " -c ";
+	cmd += origin.x;
+	cmd += " ";
+	cmd += origin.y;
+	cmd += " ";
+	cmd += origin.z;
+	cmd += " -n ";
+	cmd += name;
+	MGlobal::displayInfo(cmd);
+	MGlobal::executeCommand(cmd, true);
+}
+
+void ThreeSweepCmd::drawSquare(std::vector<vec3> points, MString name){
+	MString cmd = "curve -d 1 -p ";
+	cmd += points[0].x;
+	cmd += " ";
+	cmd += points[0].y;
+	cmd += " ";
+	cmd += points[0].z;
+	cmd += " -p ";
+	cmd += points[1].x;
+	cmd += " ";
+	cmd += points[1].y;
+	cmd += " ";
+	cmd += points[1].z;
+	cmd += " -n side;";
+	cmd += name;
+
+	MGlobal::executeCommand(cmd, true);//side1
+	MGlobal::executeCommand(cmd, true);//side2
+
+	vec3 moveVec = points[2] - points[1];
+	cmd = "move -r ";
+	cmd += moveVec.x;
+	cmd += " ";
+	cmd += moveVec.y;
+	cmd += " ";
+	cmd += moveVec.z;
+	cmd += " side2;";
+	cmd += "loft -ch 1 -u 1 -c 0 -ar 1 -d 3 -ss 1 -rn 0 -po 0 -rsn false -n ";
+	cmd += name;
+	cmd += "side1 side2; ";
 }
 
 void ThreeSweepCmd::loft(MString curve1, MString curve2, MString objName) {

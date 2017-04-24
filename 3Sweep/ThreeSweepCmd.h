@@ -24,10 +24,12 @@ public:
 	int preProcess(MString path);
 	
 	void drawInitialCylinder(float radius, vec3 origin, vec3 ax, int sx, MString name);
-	void drawInitialCube(float l, vec3 origin, vec3 ax, vec3 rotation, MString name);
+	void drawInitialCube(float length, float width, vec3 origin, vec3 ax, vec3 rotation, MString name);
 	void extrude(MString objName, int startIdx, int endIdx, vec3 translate, vec3 rotation, vec3 scale);
 	void extrudeAlongCurve(MString objName, int startIdx, int endIdx, MString curve, vec3 scale);
 	void ThreeSweepCmd::drawCircle(vec3 origin, vec3 normal, float radius, MString name);
+	void ThreeSweepCmd::drawSquare(vec3 origin, vec3 normal, float length, float width, MString squareName);
+	void ThreeSweepCmd::drawSquare(std::vector<vec3> points, MString name);
 	void ThreeSweepCmd::loft(MString curve1, MString curve2, MString objName);
 	void ThreeSweepCmd::loft(MString objName, MString curve1);
 	vec3 convertCoordinates(vec3 point, bool reverse);
