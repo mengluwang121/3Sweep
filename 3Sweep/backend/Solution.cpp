@@ -60,7 +60,7 @@ bool Solution::compute_square()
 	// z01 > 0; z12 < 0
 	float z01 = sqrtf(max(-C3 * C1 / C2, 0.0f));
 	float z12 = -sqrtf(max(-C1 * C2 / C3, 0.0f));
-	float z23 = -C3 / z01;
+	float z23 = C3 / z01;
 	
 	// update p0, p1, p2, p3
 	p0 += vec3(0.f);

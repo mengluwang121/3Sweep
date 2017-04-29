@@ -174,11 +174,8 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			float width = pre_square_plane->getWidth();
 			vec3 origin = pre_square_plane->getOrigin();
 			vec3 normal = pre_square_plane->getNormal();
-			
-			//vec3 rotation = vec3(0, 0, 0);
-			
-			//drawSquare(origin, normal, length, width, squareName);
-			//drawInitialCube(length, width, origin, vec3(0, 1, 0), rotation, curGeometry);
+			std::vector<vec3> vertices = pre_square_plane->getVertices();
+			drawSquare(vertices, curGeometry);
 		}
 
 		for (int i = 1; i < manager->curt_solution->history.size(); i++) {
@@ -229,16 +226,16 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 				scaleRatio = (curLength / lastLength) * (curLength / lastLength);
 				// update pre_circle
 				pre_plane = curt_plane;
-				int startIdx = 0;
-				int endIdx = 0;
+				int startIdx = -1;
+				int endIdx = -1;
 
 				vec3 translateW = curOrigin - preOrigin;//world 
-				float angleZ = glm::degrees(glm::acos(glm::dot(glm::normalize(vec3(preNormal.x, preNormal.y, preNormal.z)),glm::normalize(vec3(curNormal.x, curNormal.y, preNormal.z)))));
+				//float angleZ = glm::degrees(glm::acos(glm::dot(glm::normalize(vec3(preNormal.x, preNormal.y, preNormal.z)),glm::normalize(vec3(curNormal.x, curNormal.y, preNormal.z)))));
 				//float angleY = glm::degrees(glm::acos(glm::dot(glm::normalize(vec3(preNormal.x, 0, preNormal.z)), glm::normalize(vec3(curNormal.x, 0, curNormal.z)))));
 				//float angleX = glm::degrees(glm::acos(glm::dot(glm::normalize(vec3(0, preNormal.y, preNormal.z)), glm::normalize(vec3(0, curNormal.y, curNormal.z)))));
-				vec3 rotationL = vec3(0, angleZ, 0);
+				vec3 rotationL = vec3(0, 0, 0);
 				vec3 scaleL = vec3(scaleRatio, scaleRatio, scaleRatio);
-				//extrude(curGeometry, startIdx, endIdx, translateW, rotationL, scaleL);
+				extrude(curGeometry, startIdx, endIdx, translateW, rotationL, scaleL);
 
 				//Square* curt_plane = (Square*)curt_plane;
 				//MString curSquare = curGeometry;
@@ -321,7 +318,7 @@ void ThreeSweepCmd::drawInitialCube(float length, float width, vec3 origin, vec3
 	cmd += " -h 0.0001 -ax ";
 	cmd += ax.x;
 	cmd += " ";
-	cmd += ax.y;
+	cmd += -ax.y;
 	cmd += " ";
 	cmd += ax.z;
 	cmd += " -n ";
@@ -332,6 +329,12 @@ void ThreeSweepCmd::drawInitialCube(float length, float width, vec3 origin, vec3
 	cmd += origin.y;
 	cmd += " ";
 	cmd += origin.z;
+	cmd += "; rotate -r -eu -fo -ws ";
+	cmd += rotation.x;
+	cmd += " ";
+	cmd += rotation.y;
+	cmd += " ";
+	cmd += rotation.z;
 
 	MGlobal::displayInfo(cmd);
 	MGlobal::executeCommand(cmd, true);
@@ -359,13 +362,17 @@ void ThreeSweepCmd::extrude(MString objName, int startIdx, int endIdx, vec3 tran
 	cmd += scale.y;
 	cmd += " ";
 	cmd += scale.z;
-	cmd += " ";
-	cmd += objName;
-	cmd += ".f[";
-	cmd += startIdx;
-	cmd += ":";
-	cmd += endIdx;
-	cmd += "]";
+	
+	if (startIdx >= 0 && endIdx >= 0) {
+		cmd += " ";
+		cmd += objName;
+		cmd += ".f[";
+		cmd += startIdx;
+		cmd += ":";
+		cmd += endIdx;
+		cmd += "]";
+	}
+
 	MGlobal::displayInfo(cmd);
 	MGlobal::executeCommand(cmd, true);
 }
@@ -507,8 +514,6 @@ void ThreeSweepCmd::drawSquare(std::vector<vec3> points, MString name){
 	cmd += " ";
 	cmd += points[1].z;
 	cmd += " -n side;";
-	cmd += name;
-
 	MGlobal::executeCommand(cmd, true);//side1
 	MGlobal::executeCommand(cmd, true);//side2
 
@@ -520,9 +525,19 @@ void ThreeSweepCmd::drawSquare(std::vector<vec3> points, MString name){
 	cmd += " ";
 	cmd += moveVec.z;
 	cmd += " side2;";
-	cmd += "loft -ch 1 -u 1 -c 0 -ar 1 -d 3 -ss 1 -rn 0 -po 0 -rsn false -n ";
+	cmd += "loft -ch 1 -u 1 -c 0 -ar 1 -d 3 -ss 1 -rn 0 -po 0 -rsn false -n nurbsSquare1 ";
+	cmd += "side1 side2;";
+	cmd += "delete side1 side2;";
+	MGlobal::executeCommand(cmd, true); //move and loft
+
+	cmd = "nurbsToPoly -pt 1 -n ";
 	cmd += name;
-	cmd += "side1 side2; ";
+	cmd += " nurbsSquare1;";
+	
+	MString reduceCmd = "ReducePolygon; setAttr \"polyReduce1.termination\" 1; setAttr \"polyReduce1.vertexCount\" 4;";//set reduction method to vertex
+	cmd += reduceCmd;
+	//cmd += "delete nurbsSquare1;";
+	MGlobal::executeCommand(cmd, true); //toPolygon and reduce
 }
 
 void ThreeSweepCmd::loft(MString curve1, MString curve2, MString objName) {
