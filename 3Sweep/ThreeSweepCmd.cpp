@@ -446,7 +446,7 @@ int ThreeSweepCmd::preProcess(MString path) {
         std::string s = path.asChar();
         std::string delimiter = "/";
         std::string pathPre = s.substr(0, s.find_last_of(delimiter));
-        std::string cmd = pathPre.append("/EdgeDetection.exe ");
+        std::string cmd = pathPre.append("/EdgeDetectionInteractive.exe ");
         cmd.append(path.asChar());
 
         MString info = cmd.c_str();
