@@ -104,7 +104,7 @@ global proc finalize(){
 	}
 }
 
-global proc modify(){
+global proc recompute(){
 	string $array[] = `ls -sl`;
 
 	if(size($array)<1){
@@ -127,6 +127,17 @@ global proc modify(){
 		}
 	}
 }
+
+global proc recreate(string $geometryName){
+	print ("Recreating: " + $geometryName);
+	delete $geometryName;
+	$circleSet = $geometryName + "Circle*";
+	delete $circleSet;
+	string $cmd = "ThreeSweepCmd -gn " + $geometryName + " -rc false";
+	print $cmd;
+	eval($cmd);
+}
+
 
 if (`runTimeCommand -exists process`){
 	runTimeCommand -e -del process;

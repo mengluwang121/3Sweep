@@ -69,7 +69,7 @@ frameLayout -label "set parameters" -collapsable true;
               -minValue 2 -maxValue 100 -value 20 samplePointsField`; 
 
 		rowLayout -nc 2 -width 400 -columnWidth2 200 200 -columnAlign2 "center" "center";					
-			button -label "Modify" -command "modify()"; 
+			button -label "Recompute" -command "recompute()"; 
 			button -label "Reset" -command "deleteUI -window ctrlWindow";
 		setParent ..;
 

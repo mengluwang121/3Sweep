@@ -3,12 +3,15 @@
 #include <maya/MFnDependencyNode.h>
 #include <maya/MFnNurbsCurve.h>
 #include <cstdlib>
+#include <string>
+#include <sstream>
 
 const char *geometryNameFlag = "-gn", *geometryNameLongFlag = "-geoname";
 const char *pathFlag = "-pth", *pathLongFlag = "-path";
 const char *pointFlag = "-p", *pointLongFlag = "-point";
 const char *modeFlag = "-m", *modeLongFlag = "-mode";
 const char *nCurvesFlag = "-ncv", *nCurvesLongFlag = "-ncurves";
+const char *recomputeFlag = "-rc", *recomputeLongFlag = "-recompute";
 
 Manager* ThreeSweepCmd::manager = nullptr;
 
@@ -31,6 +34,7 @@ MSyntax ThreeSweepCmd::newSyntax()
 	syntax.addFlag(modeFlag, modeLongFlag, MSyntax::kDouble);
 	syntax.addFlag(nCurvesFlag, nCurvesLongFlag, MSyntax::kDouble);
 	syntax.addFlag(pointFlag, pointLongFlag, MSyntax::kDouble, MSyntax::kDouble, MSyntax::kDouble);
+	syntax.addFlag(recomputeFlag, recomputeLongFlag, MSyntax::kBoolean);
 
 	syntax.makeFlagMultiUse(pointFlag);
 
@@ -50,7 +54,7 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 	int mode = 0;
 	int nCurves = 0;
 	int subdivisionsX = 20;
-	int index = 0;
+	bool recompute = true;
 	MString curGeometry = "";
 
 	//preprocessing
@@ -71,18 +75,80 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		}
 	}
 
+	//which stroke is being processed. 
 	if (argData.isFlagSet(modeFlag))
 		argData.getFlagArgument(modeFlag, 0, mode);
 
 	if (argData.isFlagSet(nCurvesFlag))
 		argData.getFlagArgument(nCurvesFlag, 0, nCurves);
 
-	//index = ((nCurves - 1) / 3) + 1; //start from 1;
-	//curGeometry = "Geometry";
-	//curGeometry += index;
-
 	if (argData.isFlagSet(geometryNameFlag))
 		argData.getFlagArgument(geometryNameFlag, 0, curGeometry);
+
+	std::string curGeometryStr = curGeometry.asChar();
+	std::string indexStr = curGeometryStr.substr(8, curGeometryStr.length());
+	int index = std::stoi(indexStr);
+	
+	if (argData.isFlagSet(recomputeFlag))
+		argData.getFlagArgument(recomputeFlag, 0, recompute);
+
+	if (!recompute) {
+		if (manager->solutions.size() < index) {
+			MGlobal::displayError("Geometry information does not exist, please set recompute flag to true!");
+			return MStatus::kFailure;
+		}
+		//update the scene with internal information;
+
+		manager->curt_solution = manager->solutions[index];
+
+		//update cur solution
+		int shape = manager->curt_solution->shape;
+
+		if (shape == Solution::Shape::CIRCLE) {
+		
+		Geometry* pre_plane = (manager->curt_solution->history[0]);
+	 	Circle* circle_plane = (Circle*)pre_plane;
+		vec3 origin = circle_plane->getOrigin();
+		float radius = circle_plane->getRadius();
+		vec3 normal = circle_plane->getNormal();
+
+		MString circleName = curGeometry;
+		circleName += "Circle0";
+		drawCircle(origin, normal, radius, circleName);
+
+		for (int i = 1; i < manager->curt_solution->history.size(); i++) {
+			Geometry* curt_plane = (manager->curt_solution->history[i]);
+			vec3 curOrigin = curt_plane->getOrigin();
+			vec3 curNormal = curt_plane->getNormal();
+			float curRadius = curt_plane->getRadius();
+			
+			MString curCircle = curGeometry;
+			curCircle += "Circle";
+			curCircle += i;
+			//draw current circle;
+			drawCircle(curOrigin, curNormal, curRadius, curCircle);
+
+			vec3 preOrigin = pre_plane->getOrigin();
+			vec3 preNormal = pre_plane->getNormal();
+			float preRadius = pre_plane->getRadius();
+
+			float scaleRatio = 0;
+			scaleRatio = (curRadius / preRadius) * (curRadius / preRadius);
+			
+			//loft surface
+			if (i == 1) {
+				MString preCircle = curGeometry;
+				preCircle += "Circle";
+				preCircle += (i - 1);
+				loft(preCircle, curCircle, curGeometry);
+			}
+			else {
+				loft(curGeometry, curCircle);
+			}
+		}
+		}
+		return MStatus::kSuccess;
+	}
 
 	//get points in this curve
 	int numPoints = 0;
@@ -106,9 +172,10 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 	/*if (manager->number_of_strokes % 3 == 0) manager->end();
 	manager->number_of_strokes = nCurves;*/
 
+	//end the last solution.
 	if (mode == 1)
 		manager->end();
-
+	
 	//initialize manager with current image dege information;
 	if (manager->curt_solution == nullptr) {
 		std::string s = manager->path;
@@ -130,7 +197,9 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		manager->update(points[i], true);
 	}
 
-	manager->curt_solution->compute();
+	if (manager->curt_solution->compute()) {
+		// todo
+	}
 	int shape = manager->curt_solution->shape;
 	MString sp = "Shape: ";
 	sp += shape;
@@ -154,7 +223,7 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			MString circleName = curGeometry;
 			circleName += "Circle0";
 			drawCircle(origin, normal, radius, circleName);
-			//drawInitialCylinder(radius, origin, normal, subdivisionsX, curGeometry);
+ 
 		}
 		else if (shape == Solution::Shape::SQUARE) {
 			MGlobal::displayInfo("Square is not computed");
@@ -204,12 +273,6 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 				float curRadius = curt_plane->getRadius();
 				scaleRatio = (curRadius / preRadius) * (curRadius / preRadius);
 				// TEST START
-				MString radiusString = "Radius: ";
-				radiusString += curRadius;
-				radiusString += "; LastRadius: ";
-				radiusString += preRadius;
-				MGlobal::displayInfo(radiusString);
-				
 				MString curCircle = curGeometry;
 				curCircle += "Circle";
 				curCircle += i;
@@ -267,19 +330,6 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 				//	loft(curGeometry, curSquare);
 				//}
 			}
-
-			// update pre_circle
-			//pre_plane = curt_plane;
-			//int startIdx = subdivisionsX;
-			//int endIdx = subdivisionsX * 2-1;
-
-			//vec3 translateW = curOrigin - preOrigin;//world 
-			//float angleZ = glm::degrees(glm::acos(glm::dot(glm::normalize(vec3(preNormal.x, preNormal.y, preNormal.z)),glm::normalize(vec3(curNormal.x, curNormal.y, preNormal.z)))));
-			//float angleY = glm::degrees(glm::acos(glm::dot(glm::normalize(vec3(preNormal.x, 0, preNormal.z)), glm::normalize(vec3(curNormal.x, 0, curNormal.z)))));
-			//float angleX = glm::degrees(glm::acos(glm::dot(glm::normalize(vec3(0, preNormal.y, preNormal.z)), glm::normalize(vec3(0, curNormal.y, curNormal.z)))));
-			//vec3 rotationL = vec3(0, angleZ, 0);
-			//vec3 scaleL = vec3(scaleRatio, scaleRatio, scaleRatio);
-			//extrude(curGeometry, startIdx, endIdx, translateW, rotationL, scaleL);
 		
 		}
 
@@ -620,3 +670,7 @@ glm::vec3 aimY(glm::vec3 vec) {
 	out[2] = glm::degrees(zAngle);
 	return out;
 }
+
+//void ThreeSweepCmd::createGeometry() {
+
+//}
