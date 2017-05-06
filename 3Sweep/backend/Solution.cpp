@@ -22,12 +22,12 @@ bool Solution::compute()
 
 	if (shape == CIRCLE) {
 		if (!curt) return compute_circle();
-		return update_circle();
+		update_circle();
 	}
 	// for square
 	if (shape == SQUARE) {
 		if (!curt) return compute_square();
-		return update_square();
+		update_square();
 	}	
 	return false;
 }
@@ -221,11 +221,11 @@ bool Solution::update_circle()
 		// compute the radius by shooting ray at each contour point
 		float max = std::numeric_limits<float>::max(); 
 		float min = -std::numeric_limits<float>::max();
-		MString info = "max: ";
-		info += max;
-		info += " min: ";
-		info += min;
-		MGlobal::displayInfo(info);
+		//MString info = "max: ";
+		//info += max;
+		//info += " min: ";
+		//info += min;
+		//MGlobal::displayInfo(info);
 		//float max = 0, min = 0;
 		for (int j = 0; j < contours.size(); j++) {
 			vec3 ray = contours[j] - curt_point;
@@ -242,11 +242,11 @@ bool Solution::update_circle()
 				min = fminf(min, projection);*/
 			}
 		}
-		info = "max: ";
-		info += max;
-		info += " min: ";
-		info += min;
-		MGlobal::displayInfo(info);
+		//info = "max: ";
+		//info += max;
+		//info += " min: ";
+		//info += min;
+		//MGlobal::displayInfo(info);
 
 		float radius = pre_circle->getRadius();
 		if (max != 0.0f && min != 0.0f) radius = 0.5f * (max - min);
@@ -262,11 +262,22 @@ bool Solution::update_circle()
 		//	normal_2d = -pre_circle->getNormal();
 		//}
 		vec3 normal = normalize(length_xy * normal_2d - vec3(0.0f, 0.0f, normal_z));
-		Circle* new_circle = new Circle(origin, radius, -normal);
+		Circle* new_circle = nullptr;
+		// update circle
+		if (i - 3 < history.size()) {
+			new_circle = (Circle*)history[i - 3];
+			new_circle->setOrigin(origin);
+			new_circle->setNormal(-normal);
+			new_circle->setRadius(radius);
+		}
+		// add circle
+		else {
+			new_circle = new Circle(origin, radius, -normal);
+			// push the previous circle to the history list
+			history.push_back(new_circle);
+		}
 		// get the circle pointer of previous one
-		pre_circle = new_circle;
-		// push the previous circle to the history list
-		history.push_back(new_circle);
+		pre_circle = new_circle;		
 	}	
 	return true;
 }

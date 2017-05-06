@@ -14,6 +14,8 @@ public:
 	void update_line(const vec3 & point);
 	void update_curve(const vec3 & point);
 	void end();
+	void merge_solution(Solution* s);
+	bool merge_two_circles(Solution* a, Solution* b);
 	Solution* curt_solution;
 	int number_of_strokes;
 	std::string path;

@@ -56,6 +56,63 @@ void Manager::end()
 	curt_solution = nullptr;
 }
 
+void Manager::merge_solution(Solution * s)
+{
+	for (auto sol : solutions) {
+		if (merge_two_circles(s, sol)) {
+			// update the circles in sol
+			sol->update_circle();
+		}
+	}
+	// finally update all the circles
+	// this would be 
+	// s->update_circle();
+}
+
+bool Manager::merge_two_circles(Solution * a, Solution * b)
+{
+	float TH_NORMAL = 0.1f; // threshold of dot(n1, n2)
+	float TH_ORIGIN = 0.1f; // threshold of distance(o1, o2)
+	Circle* c1 = (Circle*)(a->curt);
+	Circle* c2 = (Circle*)(b->curt);
+	vec3 n1 = c1->getNormal();
+	vec3 n2 = c2->getNormal();
+	vec3 o1 = c1->getOrigin();
+	vec3 o2 = c2->getOrigin();
+	if (1.0f - fabsf(dot(n1, n2)) < TH_NORMAL) {
+		// align the normals 
+		// n1, n2 in 180 degree
+		if (dot(n1, n2) < 0.0f) {
+			vec3 avg = normalize(0.5f * (n2 - n1));
+			n2 = avg;
+			n1 = -avg;
+		}
+		// n1, n2 in 0 degree
+		else {
+			vec3 avg = normalize(0.5f * (n1 + n2));
+			n1 = avg;
+			n2 = avg;
+		}
+		// set the new normal
+		c1->setNormal(n1);
+		c2->setNormal(n2);
+		// merge the origins
+		if (distance(o1, o2) < TH_ORIGIN) {
+			vec3 avg = 0.5f * (o1 + o2);
+			o1 = avg;
+			o2 = avg;
+			// set the new origin
+			c1->setOrigin(o1);
+			c2->setOrigin(o2);
+		}
+		// merged
+		return true;
+	}
+	// nothing updated
+	return false;
+
+}
+
 //int main() {
 //	Manager manager = Manager();
 //	vec3 camera = vec3(0.0, 0.0, -1.0);
