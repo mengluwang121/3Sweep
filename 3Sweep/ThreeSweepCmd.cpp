@@ -169,9 +169,6 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		}
 	}
 
-	/*if (manager->number_of_strokes % 3 == 0) manager->end();
-	manager->number_of_strokes = nCurves;*/
-
 	//end the last solution.
 	if (mode == 1)
 		manager->end();
@@ -198,8 +195,10 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 	}
 
 	if (manager->curt_solution->compute()) {
-		// todo
+		manager->merge_solution(manager->curt_solution);
+		MString
 	}
+
 	int shape = manager->curt_solution->shape;
 	MString sp = "Shape: ";
 	sp += shape;
@@ -223,7 +222,6 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			MString circleName = curGeometry;
 			circleName += "Circle0";
 			drawCircle(origin, normal, radius, circleName);
- 
 		}
 		else if (shape == Solution::Shape::SQUARE) {
 			MGlobal::displayInfo("Square is not computed");
@@ -235,15 +233,11 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 	}else if (mode == 3) {
 		MGlobal::displayInfo("Extruding");
 
-		//int index = nCurves/ 3; //circle index
-		//MString thirdStroke = "curve";
-		//thirdStroke += nCurves;//the third curve name
-
 		//build temp plane
 		Geometry* pre_plane = (manager->curt_solution->history[0]);
 		Geometry* curt_plane = pre_plane;
 
-		//build the first plane for cube: or cube
+		//build the first plane for cube: 
 		if (shape == Solution::Shape::SQUARE) {
 
 			Square* pre_square_plane = (Square*) pre_plane;
@@ -310,25 +304,6 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 				vec3 scaleL = vec3(scaleRatio, scaleRatio, scaleRatio);
 				extrude(curGeometry, startIdx, endIdx, translateW, rotationL, scaleL);
 
-				//Square* curt_plane = (Square*)curt_plane;
-				//MString curSquare = curGeometry;
-				//curSquare += "Square";
-				//curSquare += i;
-				//float curLength = curt_plane->getLength();
-				//float curWidth = curt_plane->getWidth();
-				////draw current square;
-				//drawSquare(curOrigin, curNormal, curLength, curWidth, curSquare);
-
-				////loft surface
-				//if (i == 1) {
-				//	MString preCircle = curGeometry;
-				//	preCircle += "Circle";
-				//	preCircle += (i - 1);
-				//	loft(preCircle, curSquare, curGeometry);
-				//}
-				//else {
-				//	loft(curGeometry, curSquare);
-				//}
 			}
 		
 		}
