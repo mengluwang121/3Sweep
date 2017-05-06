@@ -15,10 +15,12 @@ public:
 	void update_curve(const vec3 & point);
 	void end();
 	void merge_solution(Solution* s);
+	void clear_update_list();
 	bool merge_two_circles(Solution* a, Solution* b);
 	Solution* curt_solution;
 	int number_of_strokes;
 	std::string path;
 	std::vector<Solution*> solutions;
+	std::vector<int> update_list;
 };
 

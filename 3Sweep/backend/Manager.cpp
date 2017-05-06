@@ -58,15 +58,23 @@ void Manager::end()
 
 void Manager::merge_solution(Solution * s)
 {
-	for (auto sol : solutions) {
+	update_list.clear();
+	for (int i = 0; i < solutions.size(); i++) {
+		Solution* sol = solutions[i];
 		if (merge_two_circles(s, sol)) {
 			// update the circles in sol
 			sol->update_circle();
+			update_list.push_back(i);
 		}
 	}
 	// finally update all the circles
 	// this would be 
 	// s->update_circle();
+}
+
+void Manager::clear_update_list()
+{
+	update_list.clear();
 }
 
 bool Manager::merge_two_circles(Solution * a, Solution * b)
