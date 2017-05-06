@@ -4,6 +4,7 @@
 #include <maya/MFnNurbsCurve.h>
 #include <cstdlib>
 
+const char *geometryNameFlag = "-gn", *geometryNameLongFlag = "-geoname";
 const char *pathFlag = "-pth", *pathLongFlag = "-path";
 const char *pointFlag = "-p", *pointLongFlag = "-point";
 const char *modeFlag = "-m", *modeLongFlag = "-mode";
@@ -25,6 +26,7 @@ MSyntax ThreeSweepCmd::newSyntax()
 {
 	MSyntax syntax;
 
+	syntax.addFlag(geometryNameFlag, geometryNameLongFlag, MSyntax::kString);
 	syntax.addFlag(pathFlag, pathLongFlag, MSyntax::kString);
 	syntax.addFlag(modeFlag, modeLongFlag, MSyntax::kDouble);
 	syntax.addFlag(nCurvesFlag, nCurvesLongFlag, MSyntax::kDouble);
@@ -75,9 +77,12 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 	if (argData.isFlagSet(nCurvesFlag))
 		argData.getFlagArgument(nCurvesFlag, 0, nCurves);
 
-	index = ((nCurves - 1) / 3) + 1; //start from 1;
-	curGeometry = "Geometry";
-	curGeometry += index;
+	//index = ((nCurves - 1) / 3) + 1; //start from 1;
+	//curGeometry = "Geometry";
+	//curGeometry += index;
+
+	if (argData.isFlagSet(geometryNameFlag))
+		argData.getFlagArgument(geometryNameFlag, 0, curGeometry);
 
 	//get points in this curve
 	int numPoints = 0;
@@ -98,8 +103,11 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		}
 	}
 
-	if (manager->number_of_strokes % 3 == 0) manager->end();
-	manager->number_of_strokes = nCurves;
+	/*if (manager->number_of_strokes % 3 == 0) manager->end();
+	manager->number_of_strokes = nCurves;*/
+
+	if (mode == 1)
+		manager->end();
 
 	//initialize manager with current image dege information;
 	if (manager->curt_solution == nullptr) {
@@ -124,6 +132,9 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 
 	manager->curt_solution->compute();
 	int shape = manager->curt_solution->shape;
+	MString sp = "Shape: ";
+	sp += shape;
+	MGlobal::displayInfo(sp);
 
 	Geometry* plane = (Geometry*)(manager->curt_solution->curt);
 	
@@ -132,7 +143,7 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		return MStatus::kSuccess;
 	}
 
-	if (nCurves % 3 == 2) {
+	if (mode==2) {
 		if (shape == Solution::Shape::CIRCLE) {
 			MGlobal::displayInfo("Circle is computed");
 			Circle* circle_plane = (Circle*)plane;
@@ -152,20 +163,20 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			info = "this shape is not supported!";
 			MGlobal::displayInfo(info);
 		}
-	}else if (nCurves % 3 == 0) {
+	}else if (mode == 3) {
 		MGlobal::displayInfo("Extruding");
 
 		//int index = nCurves/ 3; //circle index
-		MString thirdStroke = "curve";
-		thirdStroke += nCurves;//the third curve name
+		//MString thirdStroke = "curve";
+		//thirdStroke += nCurves;//the third curve name
 
-		
 		//build temp plane
 		Geometry* pre_plane = (manager->curt_solution->history[0]);
 		Geometry* curt_plane = pre_plane;
 
 		//build the first plane for cube: or cube
 		if (shape == Solution::Shape::SQUARE) {
+
 			Square* pre_square_plane = (Square*) pre_plane;
 			
 			MString squareName = curGeometry;
@@ -216,7 +227,6 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 				else {
 					loft(curGeometry, curCircle);
 				}
-				// TEST END
 			}
 			else if (shape == Solution::Shape::SQUARE) {
 
@@ -273,6 +283,16 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		
 		}
 
+		//rename the curve
+		MString cmd = "rename curve1 ";
+		cmd += curGeometry + "curve1;";
+		cmd += "rename curve2 ";
+		cmd += curGeometry + "curve2;";
+		cmd += "rename curve3 ";
+		cmd += curGeometry + "curve3;";
+		MGlobal::executeCommand(cmd, true);
+
+		
 	}
 
 	return MStatus::kSuccess;
@@ -456,6 +476,7 @@ int ThreeSweepCmd::preProcess(MString path) {
         return retCode;
 }
 
+glm::vec3 aimY(glm::vec3 vec);
 void ThreeSweepCmd::drawCircle(vec3 origin, vec3 normal, float radius, MString name) {
 	MString cmd = "circle -r ";
 	cmd += radius;
@@ -473,6 +494,18 @@ void ThreeSweepCmd::drawCircle(vec3 origin, vec3 normal, float radius, MString n
 	cmd += origin.z;
 	cmd += " -n ";
 	cmd += name;
+	MGlobal::displayInfo(cmd);
+	MGlobal::executeCommand(cmd, true);
+
+	glm::vec3 rotateAngle = aimY(normal);
+	cmd = "xform -cp;";
+	cmd += "manipPivot -o ";
+	cmd += rotateAngle.x;
+	cmd += " ";
+	cmd += rotateAngle.y;
+	cmd += " ";
+	cmd += rotateAngle.z;
+	cmd += " -pin true;";
 	MGlobal::displayInfo(cmd);
 	MGlobal::executeCommand(cmd, true);
 }
@@ -560,4 +593,30 @@ void ThreeSweepCmd::loft(MString objName, MString curve1) {
 	cmd += "; Loft;";
 	MGlobal::displayInfo(cmd);
 	MGlobal::executeCommand(cmd, true);
+}
+
+glm::vec3 aimY(glm::vec3 vec) {
+	glm::vec3 out;
+	float xAngle, zAngle, xyLength, vecLength;
+	xyLength = sqrt((vec.x) * (vec.x) +
+		(vec.y) * (vec.y));
+	vecLength = sqrt((vec.x) * (vec.x) +
+		(vec.y) * (vec.y) +
+		(vec.z) * (vec.z));
+
+	// xyLength will be zero when vec is pointing
+	// along the +z or -z axis
+	if (xyLength == 0)
+		zAngle = (vec.x) > 0 ? glm::radians(90.0) : glm::radians(-90.0);
+	else
+		zAngle = acos((vec.y) / xyLength);
+
+	xAngle = -acos(xyLength / vecLength);
+
+	xAngle = (vec.z) > 0 ? xAngle : -xAngle;
+	out[0] = glm::degrees(xAngle);
+
+	zAngle = (vec.x) > 0 ? -zAngle : zAngle;
+	out[2] = glm::degrees(zAngle);
+	return out;
 }

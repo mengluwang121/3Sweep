@@ -1,6 +1,9 @@
 global string $path;
 global float $imageSize[];
 
+global string $nSamplePoints;
+global int $index = 1;
+
 global int $samplePointCount;
 global int $totalPointCount;
 
@@ -40,6 +43,7 @@ $fileId = `fopen $path "r"` ;
 
 global proc initialize3SweepUI() {
 
+global string $nSamplePoints;
 // clear former window
 if (`window -exists ctrlWindow`) deleteUI -window ctrlWindow;
 if (`windowPref -exists ctrlWindow`) windowPref -remove ctrlWindow;
@@ -54,9 +58,26 @@ columnLayout -adjustableColumn true -w 400;
     setParent ..;
 
 	rowLayout -nc 2 -width 400 -columnWidth2 200 200 -columnAlign2 "center" "center";					
-        button -label "Create" -command "invoke3SweepCmd(); deleteUI -window ctrlWindow";
+        button -label "Create" -command "invoke3SweepCmd()"; //deleteUI -window ctrlWindow";
         button -label "Cancel" -command "deleteUI -window ctrlWindow";
     setParent ..;
+
+frameLayout -label "set parameters" -collapsable true; 
+	columnLayout -columnWidth 400; 
+		$nSamplePoints = `intSliderGrp -label "Sample Points" -field true 
+              -columnWidth3 90 50 250 -columnAlign3 "left" "both" "left"
+              -minValue 2 -maxValue 100 -value 20 samplePointsField`; 
+
+		rowLayout -nc 2 -width 400 -columnWidth2 200 200 -columnAlign2 "center" "center";					
+			button -label "Modify" -command "modify()"; 
+			button -label "Reset" -command "deleteUI -window ctrlWindow";
+		setParent ..;
+
+	button -label "SelectAll(stroke, profiles, geometry)" -command "selectAll()"; 
+	button -label "Finalize" -command "finalize()";
+	button -label "Optimize" -command "optimize()";
+
+	setParent ..;
 	
 showWindow ctrlWindow;    
 }
@@ -73,7 +94,7 @@ global proc invoke3SweepCmd(){
 
 	//setAttr "imagePlane1.rotateX" -90;
 	ThreeSweepCmd -pth $path;
-	createNode ThreeSweepNode -n ThreeSweepNode1;
+	//createNode ThreeSweepNode -n ThreeSweepNode1;
 
 	//setNamedPanelLayout "Four View";
 	

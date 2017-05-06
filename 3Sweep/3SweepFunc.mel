@@ -1,35 +1,43 @@
-global proc processing(){
+global proc processing(string $geometryName, string $curveName){
 
-	ctxCompletion;
 	EPCurveTool;
 
 	global string $curves[];
+	global string $nSamplePoints;
+	global int $index;
 
-	$curves = `ls "curveShape*"`;
-	int $len = size($curves);
-	print "number of curves: ";
-    print $len;
+	$array = stringToStringArray($curveName, "curve");
+	$mode = $array[size($array)-1];//123
 
-	int $mode = $len%3;
-
-	if($len!=0 && $mode == 0){
+	if($mode == 3){
 	
-		string $cmd = "ThreeSweepCmd -ncv " + $len + " ";
-		int $nSample = `getAttr "ThreeSweepNode1.nSamplePoints"`;
-		string $pointsCmd = getSamplePoints("curve"+$len, $nSample);
+		string $cmd = "ThreeSweepCmd -gn " + $geometryName + " -m " + $mode + " ";
+		int $nSample = `intSliderGrp -q -v $nSamplePoints`;
+		string $pointsCmd = getSamplePoints($curveName, $nSample);
 		$cmd += $pointsCmd;
 		print $cmd;
 		eval($cmd);
 	
-	}else if($mode!=0){
+	}else if($mode!=3){
 
-		string $cmd = "ThreeSweepCmd -ncv " + $len + " ";
+		string $cmd = "ThreeSweepCmd -gn " + $geometryName + " -m " + $mode + " ";
 		int $nSample = 2;
-		string $pointsCmd = getSamplePoints("curve"+$len, $nSample);
+		string $pointsCmd = getSamplePoints($curveName, $nSample);
 		$cmd += $pointsCmd;
 		print $cmd;
 		eval($cmd);
 
+	}
+}
+
+global proc processingSelected(){
+	global int $index;
+	string $array[] = `ls -sl`;
+	$geometryName = "Geometry" + $index;
+	$curveName = $array[0];
+	processing($geometryName, $curveName);
+	if($curveName == "curve3"){
+		$index ++;
 	}
 }
 
@@ -55,6 +63,70 @@ global proc string getSamplePoints(string $name, int $nSample){
 	return $pointsCmd;
 }
 
+global proc selectAll(){
+	string $array[] = `ls -sl`;
+	if(size($array)<1){
+		error "Must select geometry before!";
+	}
+
+	for ($item in $array)
+	{
+		string $geometryName = $item;
+		if(startsWith($geometryName, "Geometry")){
+		    print ("Selected: " + $geometryName);
+			string $all = $geometryName+"*";
+			select -add $all;
+		}else{
+		    error "Not 3 Sweep Geometry, can not modify!";
+		}
+	}
+}
+
+global proc finalize(){
+	string $array[] = `ls -sl`;
+	if(size($array)<1){
+		error "Must select geometry before!";
+	}
+
+	for ($item in $array)
+	{
+		string $geometryName = $item;
+		if(startsWith($geometryName, "Geometry")){
+		    print ("Finalized: " + $geometryName);
+			delete -ch $geometryName;
+			$profiles = $geometryName + "Circle*";
+			delete $profiles;
+			$curves = $geometryName + "curve*";
+			delete $curves;
+		}else{
+		    error "Not 3 Sweep Geometry, can not modify!";
+		}
+	}
+}
+
+global proc modify(){
+	string $array[] = `ls -sl`;
+
+	if(size($array)<1){
+		error "Must select Geometry!";
+	}
+	
+	for ($item in $array)
+	{
+		string $geometryName = $item;
+		if(startsWith($geometryName, "Geometry")){
+		    print ("Modifying: " + $geometryName);
+			delete $geometryName;
+			$circleSet = $geometryName + "Circle*";
+			delete $circleSet;
+			processing($geometryName, $geometryName + "curve1");
+			processing($geometryName, $geometryName + "curve2");
+			processing($geometryName, $geometryName + "curve3");
+		}else{
+		    error "Not 3 Sweep Geometry, can not modify!";
+		}
+	}
+}
 
 if (`runTimeCommand -exists process`){
 	runTimeCommand -e -del process;
@@ -63,7 +135,7 @@ if (`runTimeCommand -exists process`){
 runTimeCommand
 	-annotation "process"
 	-commandLanguage "mel"
-	-command "processing()"
+	-command "ctxCompletion;processingSelected()"
 	process;
 	
 nameCommand -ann "processNameCommand" -command ("process") processNameCommand;

@@ -1,5 +1,5 @@
 #include "Solution.h"
-
+#include "ThreeSweepCmd.h"
 using namespace glm;
 
 bool Solution::compute()
@@ -219,16 +219,35 @@ bool Solution::update_circle()
 		vec3 perpend = normalize(cross(normal_2d, camera_direction));
 		// at this time contour vector should have been inited
 		// compute the radius by shooting ray at each contour point
-		float max = 0.0f, min = 0.0f;
+		float max = std::numeric_limits<float>::max(); 
+		float min = -std::numeric_limits<float>::max();
+		MString info = "max: ";
+		info += max;
+		info += " min: ";
+		info += min;
+		MGlobal::displayInfo(info);
+		//float max = 0, min = 0;
 		for (int j = 0; j < contours.size(); j++) {
 			vec3 ray = contours[j] - curt_point;
 			vec3 ray_norm = normalize(ray);
 			if (abs(dot(ray_norm, normal_2d)) < TH_DOT_ERR) {
 				float projection = dot(ray, perpend);
-				max = fmaxf(max, projection);
-				min = fminf(min, projection);
+				//TODO:
+				if (projection > 0) {
+					max = fminf(max, projection);
+				}else{ 
+					min = fmaxf(min, projection); 
+				}
+				/*max = fmaxf(max, projection);
+				min = fminf(min, projection);*/
 			}
 		}
+		info = "max: ";
+		info += max;
+		info += " min: ";
+		info += min;
+		MGlobal::displayInfo(info);
+
 		float radius = pre_circle->getRadius();
 		if (max != 0.0f && min != 0.0f) radius = 0.5f * (max - min);
 		else if (max != 0.0f && i) radius = max;
