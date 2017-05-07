@@ -82,6 +82,19 @@ global proc selectAll(){
 	}
 }
 
+global proc updateParameters(){
+	global float $thNormal;
+	global float $thOrigin;
+	global float $thRadius;
+
+	$thNormal = `textField -q -tx thNormalField`;
+	$thOrigin = `textField -q -tx thOriginField`;
+	$thRadius = `textField -q -tx thRadiusField`;
+
+	ThreeSweepCmd -tn $thNormal -to $thOrigin -tr $thRadius;
+}
+
+
 global proc finalize(){
 	string $array[] = `ls -sl`;
 	if(size($array)<1){
@@ -93,7 +106,15 @@ global proc finalize(){
 		string $geometryName = $item;
 		if(startsWith($geometryName, "Geometry")){
 		    print ("Finalized: " + $geometryName);
+			$theFirstCircle = $geometryName + "Circle0";
+			select -r $theFirstCircle;
+			$geometryNormal = `manipPivot -q -o`;
 			delete -ch $geometryName;
+
+			select -r $geometryName;
+			xform -cp;
+			manipPivot -o $geometryNormal[0] $geometryNormal[1] $geometryNormal[2] -pin true;
+
 			$profiles = $geometryName + "Circle*";
 			delete $profiles;
 			$curves = $geometryName + "curve*";

@@ -1,6 +1,8 @@
 #include "Manager.h"
 
-
+double Manager::TH_NORMAL = 0.2; // threshold of dot(n1, n2)
+double Manager::TH_ORIGIN = 1.0; // threshold of distance(o1, o2)
+double Manager::TH_RADIUS = 1.0;
 
 Manager::Manager()
 {
@@ -52,7 +54,9 @@ void Manager::update_curve(const vec3 & point)
 
 void Manager::end()
 {
-	solutions.push_back(curt_solution);
+	if (curt_solution != nullptr) {
+		solutions.push_back(curt_solution);
+	}
 	curt_solution = nullptr;
 }
 
@@ -62,7 +66,7 @@ void Manager::merge_solution(Solution * s)
 	for (int i = 0; i < solutions.size(); i++) {
 		Solution* sol = solutions[i];
 		if (merge_two_circles(s, sol)) {
-			// update the circles in sol
+			sol->history[0] = sol->curt;
 			sol->update_circle();
 			update_list.push_back(i);
 		}
@@ -79,14 +83,15 @@ void Manager::clear_update_list()
 
 bool Manager::merge_two_circles(Solution * a, Solution * b)
 {
-	float TH_NORMAL = 0.1f; // threshold of dot(n1, n2)
-	float TH_ORIGIN = 0.1f; // threshold of distance(o1, o2)
+	
 	Circle* c1 = (Circle*)(a->curt);
 	Circle* c2 = (Circle*)(b->curt);
 	vec3 n1 = c1->getNormal();
 	vec3 n2 = c2->getNormal();
 	vec3 o1 = c1->getOrigin();
 	vec3 o2 = c2->getOrigin();
+	float r1 = c1->getRadius();
+	float r2 = c2->getRadius();
 	if (1.0f - fabsf(dot(n1, n2)) < TH_NORMAL) {
 		// align the normals 
 		// n1, n2 in 180 degree
@@ -113,6 +118,12 @@ bool Manager::merge_two_circles(Solution * a, Solution * b)
 			c1->setOrigin(o1);
 			c2->setOrigin(o2);
 		}
+		//merge the radius
+		if (abs(r1 - r2) < TH_RADIUS) {
+			float avg = 0.5f*(r1 + r2);
+			c1->setRadius(avg);
+			c2->setRadius(avg);
+		}
 		// merged
 		return true;
 	}
@@ -120,18 +131,3 @@ bool Manager::merge_two_circles(Solution * a, Solution * b)
 	return false;
 
 }
-
-//int main() {
-//	Manager manager = Manager();
-//	vec3 camera = vec3(0.0, 0.0, -1.0);
-//	manager.update(vec3(-2, 0, 0), camera, true);
-//	manager.update(vec3(2, 0, 0), camera, true);
-//	manager.update(vec3(0, -1, 0), camera, true);
-//	manager.update(vec3(0, -2, 0), camera, false);
-//	manager.update(vec3(0, -3, 0), camera, false);
-//	Circle* result = (Circle*)(manager.curt_solution->curt);
-//	cout << "origin: " << result->getOrigin().x << ", " << result->getOrigin().y << ", " << result->getOrigin().z << endl;
-//	cout << "radius: " << result->getRadius() << endl;
-//	cout << "normal: " << result->getNormal().x << ", " << result->getNormal().y << ", " << result->getNormal().z << endl;
-//	return 0;
-//}

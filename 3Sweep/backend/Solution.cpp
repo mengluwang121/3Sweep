@@ -221,12 +221,7 @@ bool Solution::update_circle()
 		// compute the radius by shooting ray at each contour point
 		float max = std::numeric_limits<float>::max(); 
 		float min = -std::numeric_limits<float>::max();
-		//MString info = "max: ";
-		//info += max;
-		//info += " min: ";
-		//info += min;
-		//MGlobal::displayInfo(info);
-		//float max = 0, min = 0;
+
 		for (int j = 0; j < contours.size(); j++) {
 			vec3 ray = contours[j] - curt_point;
 			vec3 ray_norm = normalize(ray);
@@ -238,15 +233,8 @@ bool Solution::update_circle()
 				}else{ 
 					min = fmaxf(min, projection); 
 				}
-				/*max = fmaxf(max, projection);
-				min = fminf(min, projection);*/
 			}
 		}
-		//info = "max: ";
-		//info += max;
-		//info += " min: ";
-		//info += min;
-		//MGlobal::displayInfo(info);
 
 		float radius = pre_circle->getRadius();
 		if (max != 0.0f && min != 0.0f) radius = 0.5f * (max - min);
@@ -264,7 +252,7 @@ bool Solution::update_circle()
 		vec3 normal = normalize(length_xy * normal_2d - vec3(0.0f, 0.0f, normal_z));
 		Circle* new_circle = nullptr;
 		// update circle
-		if (i - 3 < history.size()) {
+		if (i - 3< history.size()) {
 			new_circle = (Circle*)history[i - 3];
 			new_circle->setOrigin(origin);
 			new_circle->setNormal(-normal);

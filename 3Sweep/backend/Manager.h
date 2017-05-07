@@ -22,5 +22,10 @@ public:
 	std::string path;
 	std::vector<Solution*> solutions;
 	std::vector<int> update_list;
+
+	static double TH_NORMAL; // threshold of dot(n1, n2)
+	static double TH_ORIGIN; // threshold of distance(o1, o2)
+	static double TH_RADIUS;
+
 };
 

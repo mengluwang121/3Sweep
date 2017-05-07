@@ -1,27 +1,32 @@
-﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppClean.targets(76,5): warning : Access to the path 'd:\onedrive\documents\visualstudio2015\projects\3sweep\3sweep\3sweep.mll' is denied.
-  ThreeSweepNode.cpp
+﻿  ThreeSweepNode.cpp
 ThreeSweepNode.cpp(139): warning C4273: 'MPxNode::dependsOn': inconsistent dll linkage
   D:\Program Files\Autodesk\Maya2016\include\maya/MPxNode.h(184): note: see previous definition of 'dependsOn'
   pluginMain.cpp
   ThreeSweepCmd.cpp
-ThreeSweepCmd.cpp(151): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-ThreeSweepCmd.cpp(184): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-ThreeSweepCmd.cpp(185): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-ThreeSweepCmd.cpp(203): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-ThreeSweepCmd.cpp(204): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-ThreeSweepCmd.cpp(234): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-ThreeSweepCmd.cpp(235): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-ThreeSweepCmd.cpp(44): warning C4101: 'status': unreferenced local variable
-ThreeSweepCmd.cpp(426): warning C4305: 'initializing': truncation from 'double' to 'float'
-ThreeSweepCmd.cpp(610): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+ThreeSweepCmd.cpp(126): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ThreeSweepCmd.cpp(134): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+ThreeSweepCmd.cpp(142): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ThreeSweepCmd.cpp(152): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ThreeSweepCmd.cpp(250): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ThreeSweepCmd.cpp(278): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ThreeSweepCmd.cpp(279): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ThreeSweepCmd.cpp(297): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ThreeSweepCmd.cpp(298): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ThreeSweepCmd.cpp(322): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ThreeSweepCmd.cpp(323): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ThreeSweepCmd.cpp(54): warning C4101: 'status': unreferenced local variable
+ThreeSweepCmd.cpp(477): warning C4305: 'initializing': truncation from 'double' to 'float'
+ThreeSweepCmd.cpp(661): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
   Test.cpp
   Stroke.cpp
 backend\Stroke.cpp(31): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
   Square.cpp
   Solution.cpp
-backend\Solution.cpp(251): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-backend\Solution.cpp(256): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+backend\Solution.cpp(239): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+backend\Solution.cpp(244): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
   Manager.cpp
+backend\Manager.cpp(93): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+backend\Manager.cpp(94): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   Geometry.cpp
   Circle.cpp
   Generating Code...

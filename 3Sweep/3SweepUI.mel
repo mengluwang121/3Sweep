@@ -15,7 +15,6 @@ global string $curves[];
 global string $initialCircles[];
 global string $circleSet[];		
 
-
 global proc addMenu() {
     global string $gMainWindow;
     setParent $gMainWindow;
@@ -73,9 +72,16 @@ frameLayout -label "set parameters" -collapsable true;
 			button -label "Reset" -command "deleteUI -window ctrlWindow";
 		setParent ..;
 
+		text -label "Normal/Origin/Radius Threshold";
+		rowLayout -numberOfColumns 4 -width 400;	
+			textField -w 100 -tx "0.2" thNormalField;
+			textField -w 100 -tx "1.0" thOriginField;
+			textField -w 100 -tx "1.0" thRadiusField;
+			button -label "Update Parameters" -w 100 -command "updateParameters()";
+		setParent ..;
+
 	button -label "SelectAll(stroke, profiles, geometry)" -command "selectAll()"; 
 	button -label "Finalize" -command "finalize()";
-	button -label "Optimize" -command "optimize()";
 
 	setParent ..;
 	
@@ -101,7 +107,7 @@ global proc invoke3SweepCmd(){
 }
 
 global proc delete3SweepUI() {
-
+	
 }
 
 addMenu();

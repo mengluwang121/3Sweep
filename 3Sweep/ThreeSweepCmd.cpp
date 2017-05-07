@@ -12,6 +12,9 @@ const char *pointFlag = "-p", *pointLongFlag = "-point";
 const char *modeFlag = "-m", *modeLongFlag = "-mode";
 const char *nCurvesFlag = "-ncv", *nCurvesLongFlag = "-ncurves";
 const char *recomputeFlag = "-rc", *recomputeLongFlag = "-recompute";
+const char *thNormalFlag = "-tn", *thNormalLongFlag = "-thnormal";
+const char *thOriginFlag = "-to", *thOriginLongFlag = "-thorigin";
+const char *thRadiusFlag = "-tr", *thRadiusLongFlag = "-thradius";
 
 Manager* ThreeSweepCmd::manager = nullptr;
 
@@ -35,6 +38,9 @@ MSyntax ThreeSweepCmd::newSyntax()
 	syntax.addFlag(nCurvesFlag, nCurvesLongFlag, MSyntax::kDouble);
 	syntax.addFlag(pointFlag, pointLongFlag, MSyntax::kDouble, MSyntax::kDouble, MSyntax::kDouble);
 	syntax.addFlag(recomputeFlag, recomputeLongFlag, MSyntax::kBoolean);
+	syntax.addFlag(thNormalFlag, thNormalLongFlag, MSyntax::kDouble);
+	syntax.addFlag(thOriginFlag, thOriginLongFlag, MSyntax::kDouble);
+	syntax.addFlag(thRadiusFlag, thRadiusLongFlag, MSyntax::kDouble);
 
 	syntax.makeFlagMultiUse(pointFlag);
 
@@ -75,6 +81,15 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		}
 	}
 
+	//parameters
+
+	if (argData.isFlagSet(thNormalFlag))
+		argData.getFlagArgument(thNormalFlag, 0, Manager::TH_NORMAL);
+	if (argData.isFlagSet(thOriginFlag))
+		argData.getFlagArgument(thOriginFlag, 0, Manager::TH_ORIGIN);
+	if (argData.isFlagSet(thRadiusFlag))
+		argData.getFlagArgument(thRadiusFlag, 0, Manager::TH_RADIUS);
+
 	//which stroke is being processed. 
 	if (argData.isFlagSet(modeFlag))
 		argData.getFlagArgument(modeFlag, 0, mode);
@@ -97,16 +112,15 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 			MGlobal::displayError("Geometry information does not exist, please set recompute flag to true!");
 			return MStatus::kFailure;
 		}
-		//update the scene with internal information;
-
-		manager->curt_solution = manager->solutions[index];
+		//update the scene with internal information; 
+		Solution *tempSolution = manager->solutions[index-1];//notice solution start from 0 while geometry index start from 1
 
 		//update cur solution
-		int shape = manager->curt_solution->shape;
+		int shape = tempSolution->shape;
 
 		if (shape == Solution::Shape::CIRCLE) {
 		
-		Geometry* pre_plane = (manager->curt_solution->history[0]);
+		Geometry* pre_plane = (tempSolution->history[0]);
 	 	Circle* circle_plane = (Circle*)pre_plane;
 		vec3 origin = circle_plane->getOrigin();
 		float radius = circle_plane->getRadius();
@@ -116,8 +130,13 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		circleName += "Circle0";
 		drawCircle(origin, normal, radius, circleName);
 
-		for (int i = 1; i < manager->curt_solution->history.size(); i++) {
-			Geometry* curt_plane = (manager->curt_solution->history[i]);
+		info = "history size: ";
+		int size = tempSolution->history.size();
+		info += size;
+		MGlobal::displayInfo(info);
+
+		for (int i = 1; i < size; i++) {
+			Geometry* curt_plane = (tempSolution->history[i]);
 			vec3 curOrigin = curt_plane->getOrigin();
 			vec3 curNormal = curt_plane->getNormal();
 			float curRadius = curt_plane->getRadius();
@@ -146,6 +165,7 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 				loft(curGeometry, curCircle);
 			}
 		}
+	
 		}
 		return MStatus::kSuccess;
 	}
@@ -170,8 +190,8 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 	}
 
 	//end the last solution.
-	if (mode == 1)
-		manager->end();
+	//if (mode == 1)
+	//	manager->end();
 	
 	//initialize manager with current image dege information;
 	if (manager->curt_solution == nullptr) {
@@ -196,7 +216,18 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 
 	if (manager->curt_solution->compute()) {
 		manager->merge_solution(manager->curt_solution);
-		MString
+	}
+	else {
+		manager->clear_update_list();
+	}
+
+	//update former geomerty
+	for (int i = 0; i < manager->update_list.size(); i++) {
+		int needUpdationIndex = manager->update_list[i] + 1;
+		MString cmd = "recreate(\"Geometry";
+		cmd += needUpdationIndex;
+		cmd += "\")";
+		MGlobal::executeCommand(cmd, true);
 	}
 
 	int shape = manager->curt_solution->shape;
@@ -305,7 +336,8 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 				extrude(curGeometry, startIdx, endIdx, translateW, rotationL, scaleL);
 
 			}
-		
+			
+
 		}
 
 		//rename the curve
@@ -316,16 +348,10 @@ MStatus ThreeSweepCmd::doIt(const MArgList& args)
 		cmd += "rename curve3 ";
 		cmd += curGeometry + "curve3;";
 		MGlobal::executeCommand(cmd, true);
-
-		
+		manager->end();
 	}
 
 	return MStatus::kSuccess;
-}
-
-vec3 ThreeSweepCmd::convertCoordinates(vec3 point, bool reverse) {
-	if (!reverse) return vec3(point.z, point.x, point.y);
-	return vec3(point.y, point.z, point.x);
 }
 
 void ThreeSweepCmd::drawInitialCylinder(float radius, vec3 origin, vec3 ax, int sx, MString name) {
@@ -525,7 +551,7 @@ void ThreeSweepCmd::drawCircle(vec3 origin, vec3 normal, float radius, MString n
 	glm::vec3 rotateAngle = aimY(normal);
 	cmd = "xform -cp;";
 	cmd += "manipPivot -o ";
-	cmd += rotateAngle.x;
+	cmd += -rotateAngle.x;
 	cmd += " ";
 	cmd += rotateAngle.y;
 	cmd += " ";
